@@ -1158,28 +1158,40 @@ export default function App() {
 
   // Connect socket
   useEffect(() => {
-    // Connect directly to backend port 5000 to avoid proxy issues on Windows, or fallback to relative URL
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const socket = io(isLocalhost ? 'http://localhost:5000' : undefined, {
-      transports: ['websocket', 'polling']
-    });
-    socketRef.current = socket;
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  
+  // ✅ تحديد رابط سيرفر Render أونلاين ورابط localhost محلياً
+  const serverUrl = isLocalhost 
+    ? 'http://localhost:5000' 
+    : 'https://aethertest-backend.onrender.com';
 
-    socket.on('connect', () => {
-      addLog('تم الاتصال بالخادم بنجاح ومستعد لبدء الاختبارات', 'system');
-    });
+  const socket = io(serverUrl, {
+    transports: ['websocket', 'polling']
+  });
+  
+  socketRef.current = socket;
 
-    socket.on('connect_error', (error) => {
-      console.warn(`WebSocket connect error: ${error.message}`);
-    });
+  socket.on('connect', () => {
+    addLog('تم الاتصال بالخادم بنجاح ومستعد لبدء الاختبارات', 'system');
+  });
 
-    socket.on('disconnect', () => {
-      addLog('تم قطع الاتصال بالخادم', 'error');
-    });
+  socket.on('connect_error', (error) => {
+    console.warn(`WebSocket connect error: ${error.message}`);
+  });
 
-    socket.on('suite-accepted', ({ cardsCount, targetUrl }) => {
-      addLog(`السيرفر استلم طلب التشغيل (${cardsCount} كارت) للرابط: ${targetUrl || 'بدون رابط'}`, 'system');
-    });
+  socket.on('disconnect', () => {
+    addLog('تم قطع الاتصال بالخادم', 'error');
+  });
+
+  socket.on('suite-accepted', ({ cardsCount, targetUrl }) => {
+    addLog(`السيرفر استلم طلب التشغيل (${cardsCount} كارت) للرابط: ${targetUrl || 'بدون رابط'}`, 'system');
+  });
+
+  // لا تنس إغلاق الاتصال عند Unmount
+  return () => {
+    socket.disconnect();
+  };
+}, []);
 
     // Handle WebSocket test runner events
     socket.on('test-start', ({ cardId, cardTitle }) => {
