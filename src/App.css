@@ -1,6 +1,41 @@
 /* AetherTest AI - Premium Design System */
 
 :root {
+  --bg-main: #f0f4f9;
+  --bg-surface: #ffffff;
+  --bg-surface-solid: #ffffff;
+  --border-glow: rgba(99, 85, 255, 0.2);
+  --border-focus: #0284c7;
+  --primary: #6355ff;
+  --primary-glow: rgba(99, 85, 255, 0.22);
+  --secondary: #0284c7;
+  --secondary-glow: rgba(2, 132, 199, 0.2);
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.18);
+  --danger: #e11d48;
+  --danger-glow: rgba(225, 29, 72, 0.18);
+  --warning: #d97706;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dark: #64748b;
+  --control-bg: #ffffff;
+  --control-border: #cbd5e1;
+  --btn-bg: #f1f5f9;
+  --btn-bg-hover: #e2e8f0;
+  --btn-border: #cbd5e1;
+  --console-shell: #ffffff;
+  --console-header-bg: #f8fafc;
+  --console-body-bg: #f8fafc;
+  --prompt-bg: #f1f5f9;
+  --prompt-text: #047857;
+  --soft-panel-bg: #f8fafc;
+  --font-sans: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --glass-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body[data-theme='dark'] {
   --bg-main: #060913;
   --bg-surface: rgba(15, 22, 42, 0.65);
   --bg-surface-solid: #0d1527;
@@ -29,42 +64,80 @@
   --prompt-bg: rgba(10, 15, 30, 0.9);
   --prompt-text: #a7f3d0;
   --soft-panel-bg: rgba(255, 255, 255, 0.03);
-  --font-sans: 'Cairo', 'Outfit', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-body[data-theme='light'] {
-  --bg-main: #f4f7fb;
-  --bg-surface: rgba(255, 255, 255, 0.76);
-  --bg-surface-solid: #ffffff;
-  --border-glow: rgba(79, 70, 229, 0.16);
-  --border-focus: rgba(14, 165, 233, 0.45);
-  --primary: #6d5dfc;
-  --primary-glow: rgba(109, 93, 252, 0.26);
-  --secondary: #0891b2;
-  --secondary-glow: rgba(8, 145, 178, 0.22);
-  --success: #059669;
-  --success-glow: rgba(5, 150, 105, 0.16);
-  --danger: #e11d48;
-  --danger-glow: rgba(225, 29, 72, 0.14);
-  --warning: #d97706;
-  --text-main: #111827;
-  --text-muted: #526071;
-  --text-dark: #7a8699;
-  --control-bg: rgba(255, 255, 255, 0.88);
-  --control-border: rgba(15, 23, 42, 0.12);
-  --btn-bg: rgba(15, 23, 42, 0.055);
-  --btn-bg-hover: rgba(15, 23, 42, 0.095);
-  --btn-border: rgba(15, 23, 42, 0.12);
-  --console-shell: #f9fbff;
-  --console-header-bg: rgba(255, 255, 255, 0.88);
-  --console-body-bg: #ffffff;
-  --prompt-bg: #f8fafc;
-  --prompt-text: #047857;
-  --soft-panel-bg: rgba(15, 23, 42, 0.035);
-  --glass-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+/* Light Mode Element Overrides for Maximum Contrast & Clarity */
+body[data-theme='light'] .credentials-card,
+body[data-theme='light'] .workspace-panel,
+body[data-theme='light'] .console-panel,
+body[data-theme='light'] .report-card,
+body[data-theme='light'] .modal-content,
+body[data-theme='light'] .bug-finder-panel,
+body[data-theme='light'] .email-report-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+
+body[data-theme='light'] .input-field,
+body[data-theme='light'] select.input-field,
+body[data-theme='light'] textarea.input-field {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body[data-theme='light'] select.input-field option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+body[data-theme='light'] .panel-title,
+body[data-theme='light'] .section-title,
+body[data-theme='light'] h1,
+body[data-theme='light'] h2,
+body[data-theme='light'] h3,
+body[data-theme='light'] h4 {
+  color: #0f172a !important;
+  border-bottom-color: #e2e8f0 !important;
+}
+
+body[data-theme='light'] .btn-secondary {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+body[data-theme='light'] .btn-secondary:hover {
+  background: #e2e8f0 !important;
+}
+
+body[data-theme='light'] .workspace-tab {
+  color: #475569 !important;
+}
+
+body[data-theme='light'] .workspace-tab.active,
+body[data-theme='light'] .workspace-tab:hover {
+  color: #0f172a !important;
+  background: #e2e8f0 !important;
+}
+
+body[data-theme='light'] details {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+body[data-theme='light'] details summary {
+  color: #0f172a !important;
+}
+
+body[data-theme='light'] .console-shell,
+body[data-theme='light'] .console-body {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
 /* Reset & Base Styles */
@@ -89,8 +162,8 @@ body {
 
 body[data-theme='light'] {
   background-image:
-    radial-gradient(circle at 8% 14%, rgba(109, 93, 252, 0.16) 0%, transparent 34%),
-    radial-gradient(circle at 88% 18%, rgba(8, 145, 178, 0.12) 0%, transparent 30%),
+    radial-gradient(circle at 8% 14%, rgba(99, 85, 255, 0.12) 0%, transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(2, 132, 199, 0.1) 0%, transparent 30%),
     linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { io } from 'socket.io-client';
 import confetti from 'canvas-confetti';
 import { 
@@ -1133,7 +1133,7 @@ export default function App() {
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [codeModalTitle, setCodeModalTitle] = useState('');
   const [codeModalContent, setCodeModalContent] = useState('');
-  const [theme, setTheme] = useState(() => localStorage.getItem('aethertest_theme') || 'dark');
+  const [theme, setTheme] = useState(() => localStorage.getItem('aethertest_theme') || 'light');
   const [language, setLanguage] = useState(() => localStorage.getItem('aethertest_language') || 'ar');
   const t = (key) => UI_TEXT[language][key] || UI_TEXT.en[key] || key;
 
@@ -2082,9 +2082,162 @@ export default function App() {
     return null;
   };
 
-  const TIMEZONE_OPTIONS = typeof Intl === 'object' && typeof Intl.supportedValuesOf === 'function'
-    ? Intl.supportedValuesOf('timeZone')
-    : ['UTC', 'Europe/London', 'America/New_York', 'Asia/Amman', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Tokyo'];
+  const rawTimezones = useMemo(() => {
+    return typeof Intl === 'object' && typeof Intl.supportedValuesOf === 'function'
+      ? Intl.supportedValuesOf('timeZone')
+      : ['UTC', 'Europe/London', 'America/New_York', 'Asia/Amman', 'Asia/Riyadh', 'Africa/Cairo', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Tokyo'];
+  }, []);
+
+  const FEATURED_TIMEZONES = useMemo(() => [
+    'Asia/Amman',        // 🇯🇴 الأردن - عمان / Jordan - Amman
+    'Asia/Riyadh',       // 🇸🇦 السعودية - الرياض / Saudi Arabia - Riyadh
+    'Africa/Cairo',      // 🇪🇬 مصر - القاهرة / Egypt - Cairo
+    'Asia/Dubai',        // 🇦🇪 الإمارات - دبي / UAE - Dubai
+    'Asia/Doha',         // 🇶🇦 قطر - الدوحة / Qatar - Doha
+    'Asia/Kuwait',       // 🇰🇼 الكويت / Kuwait
+    'Asia/Bahrain',      // 🇧🇭 البحرين - المنامة / Bahrain - Manama
+    'Asia/Muscat',       // 🇴🇲 عُمان - مسقط / Oman - Muscat
+    'Asia/Baghdad',      // 🇮🇶 العراق - بغداد / Iraq - Baghdad
+    'Asia/Beirut',       // 🇱🇧 لبنان - بيروت / Lebanon - Beirut
+    'Asia/Gaza',         // 🇵🇸 فلسطين - غزة / Palestine - Gaza
+    'Asia/Jerusalem',    // 🇵🇸 فلسطين - القدس / Palestine - Jerusalem
+    'Asia/Damascus',     // 🇸🇾 سوريا - دمشق / Syria - Damascus
+    'Asia/Aden',         // 🇾🇪 اليمن - عدن / Yemen - Aden
+    'Africa/Khartoum',   // 🇸🇩 السودان - الخرطوم / Sudan - Khartoum
+    'Africa/Tunis',      // 🇹🇳 تونس / Tunisia - Tunis
+    'Africa/Casablanca', // 🇲🇦 المغرب - الدار البيضاء / Morocco - Casablanca
+    'Africa/Algiers',    // 🇩🇿 الجزائر / Algeria - Algiers
+    'Africa/Tripoli',    // 🇱🇾 ليبيا - طرابلس / Libya - Tripoli
+    'Europe/Istanbul',   // 🇹🇷 تركيا - إسطنبول / Turkey - Istanbul
+    'Europe/London',     // 🇬🇧 بريطانيا - لندن / UK - London
+    'America/New_York'   // 🇺🇸 أمريكا - نيويورك / USA - New York
+  ], []);
+
+  const CITY_COUNTRY_NAMES = {
+    Amman: { flag: '🇯🇴', countryAr: 'الأردن', countryEn: 'Jordan', cityAr: 'عمان', cityEn: 'Amman' },
+    Riyadh: { flag: '🇸🇦', countryAr: 'السعودية', countryEn: 'Saudi Arabia', cityAr: 'الرياض', cityEn: 'Riyadh' },
+    Cairo: { flag: '🇪🇬', countryAr: 'مصر', countryEn: 'Egypt', cityAr: 'القاهرة', cityEn: 'Cairo' },
+    Dubai: { flag: '🇦🇪', countryAr: 'الإمارات', countryEn: 'UAE', cityAr: 'دبي', cityEn: 'Dubai' },
+    Doha: { flag: '🇶🇦', countryAr: 'قطر', countryEn: 'Qatar', cityAr: 'الدوحة', cityEn: 'Doha' },
+    Kuwait: { flag: '🇰🇼', countryAr: 'الكويت', countryEn: 'Kuwait', cityAr: 'الكويت', cityEn: 'Kuwait' },
+    Bahrain: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', cityAr: 'المنامة', cityEn: 'Manama' },
+    Manama: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', cityAr: 'المنامة', cityEn: 'Manama' },
+    Muscat: { flag: '🇴🇲', countryAr: 'عُمان', countryEn: 'Oman', cityAr: 'مسقط', cityEn: 'Muscat' },
+    Baghdad: { flag: '🇮🇶', countryAr: 'العراق', countryEn: 'Iraq', cityAr: 'بغداد', cityEn: 'Baghdad' },
+    Beirut: { flag: '🇱🇧', countryAr: 'لبنان', countryEn: 'Lebanon', cityAr: 'بيروت', cityEn: 'Beirut' },
+    Gaza: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'غزة', cityEn: 'Gaza' },
+    Hebron: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'الخليل', cityEn: 'Hebron' },
+    Jerusalem: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'القدس', cityEn: 'Jerusalem' },
+    Damascus: { flag: '🇸🇾', countryAr: 'سوريا', countryEn: 'Syria', cityAr: 'دمشق', cityEn: 'Damascus' },
+    Aden: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', cityAr: 'عدن', cityEn: 'Aden' },
+    Sanaa: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', cityAr: 'صنعاء', cityEn: 'Sanaa' },
+    Khartoum: { flag: '🇸🇩', countryAr: 'السودان', countryEn: 'Sudan', cityAr: 'الخرطوم', cityEn: 'Khartoum' },
+    Tunis: { flag: '🇹🇳', countryAr: 'تونس', countryEn: 'Tunisia', cityAr: 'تونس', cityEn: 'Tunis' },
+    Casablanca: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', cityAr: 'الدار البيضاء', cityEn: 'Casablanca' },
+    Rabat: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', cityAr: 'الرباط', cityEn: 'Rabat' },
+    Algiers: { flag: '🇩ℤ', countryAr: 'الجزائر', countryEn: 'Algeria', cityAr: 'الجزائر', cityEn: 'Algiers' },
+    Tripoli: { flag: '🇱🇾', countryAr: 'ليبيا', countryEn: 'Libya', cityAr: 'طرابلس', cityEn: 'Tripoli' },
+    Mogadishu: { flag: '🇸🇴', countryAr: 'الصومال', countryEn: 'Somalia', cityAr: 'مقديشو', cityEn: 'Mogadishu' },
+    Istanbul: { flag: '🇹🇷', countryAr: 'تركيا', countryEn: 'Turkey', cityAr: 'إسطنبول', cityEn: 'Istanbul' },
+    Tehran: { flag: '🇮🇷', countryAr: 'إيران', countryEn: 'Iran', cityAr: 'طهران', cityEn: 'Tehran' },
+    London: { flag: '🇬🇧', countryAr: 'بريطانيا', countryEn: 'UK', cityAr: 'لندن', cityEn: 'London' },
+    Paris: { flag: '🇫🇷', countryAr: 'فرنسا', countryEn: 'France', cityAr: 'باريس', cityEn: 'Paris' },
+    Berlin: { flag: '🇩🇪', countryAr: 'ألمانيا', countryEn: 'Germany', cityAr: 'برلين', cityEn: 'Berlin' },
+    Rome: { flag: '🇮🇹', countryAr: 'إيطاليا', countryEn: 'Italy', cityAr: 'روما', cityEn: 'Rome' },
+    Madrid: { flag: '🇪🇸', countryAr: 'إسبانيا', countryEn: 'Spain', cityAr: 'مدريد', cityEn: 'Madrid' },
+    Moscow: { flag: '🇷🇺', countryAr: 'روسيا', countryEn: 'Russia', cityAr: 'موسكو', cityEn: 'Moscow' },
+    New_York: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'نيويورك', cityEn: 'New York' },
+    Chicago: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'شيكاغو', cityEn: 'Chicago' },
+    Los_Angeles: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'لوس أنجلوس', cityEn: 'Los Angeles' },
+    Toronto: { flag: '🇨🇦', countryAr: 'كندا', countryEn: 'Canada', cityAr: 'تورونتو', cityEn: 'Toronto' },
+    Tokyo: { flag: '🇯🇵', countryAr: 'اليابان', countryEn: 'Japan', cityAr: 'طوكيو', cityEn: 'Tokyo' },
+    Seoul: { flag: '🇰🇷', countryAr: 'كوريا الجنوبية', countryEn: 'South Korea', cityAr: 'سيول', cityEn: 'Seoul' },
+    Beijing: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', cityAr: 'بكين', cityEn: 'Beijing' },
+    Shanghai: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', cityAr: 'شانغهاي', cityEn: 'Shanghai' },
+    Kolkata: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', cityAr: 'كولكاتا', cityEn: 'Kolkata' },
+    Delhi: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', cityAr: 'دلهي', cityEn: 'Delhi' },
+    Sydney: { flag: '🇦🇺', countryAr: 'أستراليا', countryEn: 'Australia', cityAr: 'سيدني', cityEn: 'Sydney' }
+  };
+
+  const getCountryFlagEmoji = (countryCode) => {
+    if (!countryCode || countryCode.length !== 2) return '';
+    const codePoints = countryCode
+      .toUpperCase()
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    return String.fromCodePoint(...codePoints);
+  };
+
+  const CITY_COUNTRY_MAP = {
+    Amman: 'JO', Riyadh: 'SA', Cairo: 'EG', Dubai: 'AE', Doha: 'QA',
+    Kuwait: 'KW', Bahrain: 'BH', Manama: 'BH', Muscat: 'OM', Baghdad: 'IQ',
+    Beirut: 'LB', Gaza: 'PS', Hebron: 'PS', Jerusalem: 'PS', Damascus: 'SY',
+    Sanaa: 'YE', Khartoum: 'SD', Tunis: 'TN', Casablanca: 'MA', Rabat: 'MA',
+    Algiers: 'DZ', Tripoli: 'LY', Mogadishu: 'SO', Istanbul: 'TR', Tehran: 'IR',
+    London: 'GB', Paris: 'FR', Berlin: 'DE', Rome: 'IT', Madrid: 'ES',
+    Amsterdam: 'NL', Brussels: 'BE', Vienna: 'AT', Zurich: 'CH', Geneva: 'CH',
+    Athens: 'GR', Dublin: 'IE', Stockholm: 'SE', Oslo: 'NO', Copenhagen: 'DK',
+    Helsinki: 'FI', Warsaw: 'PL', Prague: 'CZ', Budapest: 'HU', Bucharest: 'RO',
+    Belgrade: 'RS', Sofia: 'BG', Kiev: 'UA', Kyiv: 'UA', Moscow: 'RU',
+    New_York: 'US', Chicago: 'US', Denver: 'US', Los_Angeles: 'US', Phoenix: 'US',
+    Detroit: 'US', Indianapolis: 'US', Anchorage: 'US', Honolulu: 'US',
+    Toronto: 'CA', Vancouver: 'CA', Montreal: 'CA', Edmonton: 'CA', Winnipeg: 'CA',
+    Mexico_City: 'MX', Cancun: 'MX', Monterrey: 'MX', Tijuana: 'MX',
+    Sao_Paulo: 'BR', Rio_Branco: 'BR', Manaus: 'BR', Recife: 'BR',
+    Buenos_Aires: 'AR', Cordoba: 'AR', Santiago: 'CL', Bogota: 'CO',
+    Lima: 'PE', Caracas: 'VE', Montevideo: 'UY', Asuncion: 'PY',
+    La_Paz: 'BO', Quito: 'EC', Tokyo: 'JP', Seoul: 'KR',
+    Shanghai: 'CN', Urumqi: 'CN', Hong_Kong: 'HK', Taipei: 'TW',
+    Singapore: 'SG', Bangkok: 'TH', Jakarta: 'ID', Kuala_Lumpur: 'MY',
+    Manila: 'PH', Saigon: 'VN', Ho_Chi_Minh: 'VN', Hanoi: 'VN',
+    Kolkata: 'IN', Mumbai: 'IN', Delhi: 'IN', Dhaka: 'BD', Karachi: 'PK',
+    Islamabad: 'PK', Tashkent: 'UZ', Almaty: 'KZ', Sydney: 'AU',
+    Melbourne: 'AU', Brisbane: 'AU', Perth: 'AU', Adelaide: 'AU',
+    Auckland: 'NZ', Fiji: 'FJ', Johannesburg: 'ZA', Lagos: 'NG',
+    Nairobi: 'KE', Addis_Ababa: 'ET', Accra: 'GH'
+  };
+
+  const formatTimezoneLabel = (zone) => {
+    if (!zone) return '';
+    if (zone === 'UTC' || zone === 'Etc/UTC') return '🌐 UTC (GMT+0)';
+    const parts = zone.split('/');
+    const cityKey = parts[parts.length - 1] || zone;
+    const cleanName = cityKey.replace(/_/g, ' ');
+
+    let offsetStr = '';
+    try {
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: zone,
+        timeZoneName: 'shortOffset'
+      });
+      const partsArr = formatter.formatToParts(new Date());
+      const offset = partsArr.find(p => p.type === 'timeZoneName')?.value;
+      if (offset) {
+        offsetStr = ` (${offset})`;
+      }
+    } catch {}
+
+    const meta = CITY_COUNTRY_NAMES[cityKey];
+    if (meta) {
+      const countryStr = language === 'ar' ? meta.countryAr : meta.countryEn;
+      const cityStr = language === 'ar' ? meta.cityAr : meta.cityEn;
+      return `${meta.flag} ${countryStr} - ${cityStr}${offsetStr}`;
+    }
+
+    const countryCode = CITY_COUNTRY_MAP[cityKey];
+    const flag = countryCode ? getCountryFlagEmoji(countryCode) : '🌐';
+    return `${flag} ${cleanName}${offsetStr}`.trim();
+  };
+
+  const TIMEZONE_OPTIONS = useMemo(() => {
+    const featured = FEATURED_TIMEZONES.filter(z => rawTimezones.includes(z));
+    const others = rawTimezones.filter(z => !featured.includes(z)).sort((a, b) => {
+      const nameA = (a.split('/').pop() || a).replace(/_/g, '');
+      const nameB = (b.split('/').pop() || b).replace(/_/g, '');
+      return nameA.localeCompare(nameB);
+    });
+    return [...featured, ...others];
+  }, [rawTimezones, FEATURED_TIMEZONES]);
 
   const clearScheduleTimer = () => {
     if (scheduleTimerRef.current) {
@@ -3851,7 +4004,7 @@ export default function App() {
                       disabled={isRunning}
                     >
                       {TIMEZONE_OPTIONS.map((zone) => (
-                        <option key={zone} value={zone}>{zone}</option>
+                        <option key={zone} value={zone}>{formatTimezoneLabel(zone)}</option>
                       ))}
                     </select>
                   </label>

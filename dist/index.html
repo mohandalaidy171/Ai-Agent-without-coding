@@ -9,10 +9,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-C6UHRSwv.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CUfU5Scx.css">
+    <!-- Early theme initialization -->
+    <script>
+      (function() {
+        var theme = localStorage.getItem('aethertest_theme') || 'light';
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CAIF9kms.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-sXb9m8Vh.css">
   </head>
-  <body>
+  <body data-theme="light">
     <div id="root"></div>
   </body>
 </html>
