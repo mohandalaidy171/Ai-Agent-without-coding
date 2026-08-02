@@ -1158,40 +1158,28 @@ export default function App() {
 
   // Connect socket
   useEffect(() => {
-  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  
-  // ✅ تحديد رابط سيرفر Render أونلاين ورابط localhost محلياً
-  const serverUrl = isLocalhost 
-    ? 'http://localhost:5000' 
-    : 'https://aethertest-backend.onrender.com';
+    // Connect directly to backend port 5000 to avoid proxy issues on Windows, or fallback to relative URL
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const socket = io(isLocalhost ? 'http://localhost:5000' : undefined, {
+      transports: ['websocket', 'polling']
+    });
+    socketRef.current = socket;
 
-  const socket = io(serverUrl, {
-    transports: ['websocket', 'polling']
-  });
-  
-  socketRef.current = socket;
+    socket.on('connect', () => {
+      addLog('تم الاتصال بالخادم بنجاح ومستعد لبدء الاختبارات', 'system');
+    });
 
-  socket.on('connect', () => {
-    addLog('تم الاتصال بالخادم بنجاح ومستعد لبدء الاختبارات', 'system');
-  });
+    socket.on('connect_error', (error) => {
+      console.warn(`WebSocket connect error: ${error.message}`);
+    });
 
-  socket.on('connect_error', (error) => {
-    console.warn(`WebSocket connect error: ${error.message}`);
-  });
+    socket.on('disconnect', () => {
+      addLog('تم قطع الاتصال بالخادم', 'error');
+    });
 
-  socket.on('disconnect', () => {
-    addLog('تم قطع الاتصال بالخادم', 'error');
-  });
-
-  socket.on('suite-accepted', ({ cardsCount, targetUrl }) => {
-    addLog(`السيرفر استلم طلب التشغيل (${cardsCount} كارت) للرابط: ${targetUrl || 'بدون رابط'}`, 'system');
-  });
-
-  // لا تنس إغلاق الاتصال عند Unmount
-  return () => {
-    socket.disconnect();
-  };
-}, []);
+    socket.on('suite-accepted', ({ cardsCount, targetUrl }) => {
+      addLog(`السيرفر استلم طلب التشغيل (${cardsCount} كارت) للرابط: ${targetUrl || 'بدون رابط'}`, 'system');
+    });
 
     // Handle WebSocket test runner events
     socket.on('test-start', ({ cardId, cardTitle }) => {
@@ -2126,49 +2114,49 @@ export default function App() {
   ], []);
 
   const CITY_COUNTRY_NAMES = {
-    Amman: { flag: '🇯🇴', countryAr: 'الأردن', countryEn: 'Jordan', cityAr: 'عمان', cityEn: 'Amman' },
-    Riyadh: { flag: '🇸🇦', countryAr: 'السعودية', countryEn: 'Saudi Arabia', cityAr: 'الرياض', cityEn: 'Riyadh' },
-    Cairo: { flag: '🇪🇬', countryAr: 'مصر', countryEn: 'Egypt', cityAr: 'القاهرة', cityEn: 'Cairo' },
-    Dubai: { flag: '🇦🇪', countryAr: 'الإمارات', countryEn: 'UAE', cityAr: 'دبي', cityEn: 'Dubai' },
-    Doha: { flag: '🇶🇦', countryAr: 'قطر', countryEn: 'Qatar', cityAr: 'الدوحة', cityEn: 'Doha' },
-    Kuwait: { flag: '🇰🇼', countryAr: 'الكويت', countryEn: 'Kuwait', cityAr: 'الكويت', cityEn: 'Kuwait' },
-    Bahrain: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', cityAr: 'المنامة', cityEn: 'Manama' },
-    Manama: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', cityAr: 'المنامة', cityEn: 'Manama' },
-    Muscat: { flag: '🇴🇲', countryAr: 'عُمان', countryEn: 'Oman', cityAr: 'مسقط', cityEn: 'Muscat' },
-    Baghdad: { flag: '🇮🇶', countryAr: 'العراق', countryEn: 'Iraq', cityAr: 'بغداد', cityEn: 'Baghdad' },
-    Beirut: { flag: '🇱🇧', countryAr: 'لبنان', countryEn: 'Lebanon', cityAr: 'بيروت', cityEn: 'Beirut' },
-    Gaza: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'غزة', cityEn: 'Gaza' },
-    Hebron: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'الخليل', cityEn: 'Hebron' },
-    Jerusalem: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', cityAr: 'القدس', cityEn: 'Jerusalem' },
-    Damascus: { flag: '🇸🇾', countryAr: 'سوريا', countryEn: 'Syria', cityAr: 'دمشق', cityEn: 'Damascus' },
-    Aden: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', cityAr: 'عدن', cityEn: 'Aden' },
-    Sanaa: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', cityAr: 'صنعاء', cityEn: 'Sanaa' },
-    Khartoum: { flag: '🇸🇩', countryAr: 'السودان', countryEn: 'Sudan', cityAr: 'الخرطوم', cityEn: 'Khartoum' },
-    Tunis: { flag: '🇹🇳', countryAr: 'تونس', countryEn: 'Tunisia', cityAr: 'تونس', cityEn: 'Tunis' },
-    Casablanca: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', cityAr: 'الدار البيضاء', cityEn: 'Casablanca' },
-    Rabat: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', cityAr: 'الرباط', cityEn: 'Rabat' },
-    Algiers: { flag: '🇩ℤ', countryAr: 'الجزائر', countryEn: 'Algeria', cityAr: 'الجزائر', cityEn: 'Algiers' },
-    Tripoli: { flag: '🇱🇾', countryAr: 'ليبيا', countryEn: 'Libya', cityAr: 'طرابلس', cityEn: 'Tripoli' },
-    Mogadishu: { flag: '🇸🇴', countryAr: 'الصومال', countryEn: 'Somalia', cityAr: 'مقديشو', cityEn: 'Mogadishu' },
-    Istanbul: { flag: '🇹🇷', countryAr: 'تركيا', countryEn: 'Turkey', cityAr: 'إسطنبول', cityEn: 'Istanbul' },
-    Tehran: { flag: '🇮🇷', countryAr: 'إيران', countryEn: 'Iran', cityAr: 'طهران', cityEn: 'Tehran' },
-    London: { flag: '🇬🇧', countryAr: 'بريطانيا', countryEn: 'UK', cityAr: 'لندن', cityEn: 'London' },
-    Paris: { flag: '🇫🇷', countryAr: 'فرنسا', countryEn: 'France', cityAr: 'باريس', cityEn: 'Paris' },
-    Berlin: { flag: '🇩🇪', countryAr: 'ألمانيا', countryEn: 'Germany', cityAr: 'برلين', cityEn: 'Berlin' },
-    Rome: { flag: '🇮🇹', countryAr: 'إيطاليا', countryEn: 'Italy', cityAr: 'روما', cityEn: 'Rome' },
-    Madrid: { flag: '🇪🇸', countryAr: 'إسبانيا', countryEn: 'Spain', cityAr: 'مدريد', cityEn: 'Madrid' },
-    Moscow: { flag: '🇷🇺', countryAr: 'روسيا', countryEn: 'Russia', cityAr: 'موسكو', cityEn: 'Moscow' },
-    New_York: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'نيويورك', cityEn: 'New York' },
-    Chicago: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'شيكاغو', cityEn: 'Chicago' },
-    Los_Angeles: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', cityAr: 'لوس أنجلوس', cityEn: 'Los Angeles' },
-    Toronto: { flag: '🇨🇦', countryAr: 'كندا', countryEn: 'Canada', cityAr: 'تورونتو', cityEn: 'Toronto' },
-    Tokyo: { flag: '🇯🇵', countryAr: 'اليابان', countryEn: 'Japan', cityAr: 'طوكيو', cityEn: 'Tokyo' },
-    Seoul: { flag: '🇰🇷', countryAr: 'كوريا الجنوبية', countryEn: 'South Korea', cityAr: 'سيول', cityEn: 'Seoul' },
-    Beijing: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', cityAr: 'بكين', cityEn: 'Beijing' },
-    Shanghai: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', cityAr: 'شانغهاي', cityEn: 'Shanghai' },
-    Kolkata: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', cityAr: 'كولكاتا', cityEn: 'Kolkata' },
-    Delhi: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', cityAr: 'دلهي', cityEn: 'Delhi' },
-    Sydney: { flag: '🇦🇺', countryAr: 'أستراليا', countryEn: 'Australia', cityAr: 'سيدني', cityEn: 'Sydney' }
+    Amman: { flag: '🇯🇴', countryAr: 'الأردن', countryEn: 'Jordan', city: 'عمان / Amman' },
+    Riyadh: { flag: '🇸🇦', countryAr: 'السعودية', countryEn: 'Saudi Arabia', city: 'الرياض / Riyadh' },
+    Cairo: { flag: '🇪🇬', countryAr: 'مصر', countryEn: 'Egypt', city: 'القاهرة / Cairo' },
+    Dubai: { flag: '🇦🇪', countryAr: 'الإمارات', countryEn: 'UAE', city: 'دبي / Dubai' },
+    Doha: { flag: '🇶🇦', countryAr: 'قطر', countryEn: 'Qatar', city: 'الدوحة / Doha' },
+    Kuwait: { flag: '🇰🇼', countryAr: 'الكويت', countryEn: 'Kuwait', city: 'الكويت / Kuwait' },
+    Bahrain: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', city: 'المنامة / Manama' },
+    Manama: { flag: '🇧🇭', countryAr: 'البحرين', countryEn: 'Bahrain', city: 'المنامة / Manama' },
+    Muscat: { flag: '🇴🇲', countryAr: 'عُمان', countryEn: 'Oman', city: 'مسقط / Muscat' },
+    Baghdad: { flag: '🇮🇶', countryAr: 'العراق', countryEn: 'Iraq', city: 'بغداد / Baghdad' },
+    Beirut: { flag: '🇱🇧', countryAr: 'لبنان', countryEn: 'Lebanon', city: 'بيروت / Beirut' },
+    Gaza: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', city: 'غزة / Gaza' },
+    Hebron: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', city: 'الخليل / Hebron' },
+    Jerusalem: { flag: '🇵🇸', countryAr: 'فلسطين', countryEn: 'Palestine', city: 'القدس / Jerusalem' },
+    Damascus: { flag: '🇸🇾', countryAr: 'سوريا', countryEn: 'Syria', city: 'دمشق / Damascus' },
+    Aden: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', city: 'عدن / Aden' },
+    Sanaa: { flag: '🇾🇪', countryAr: 'اليمن', countryEn: 'Yemen', city: 'صنعاء / Sanaa' },
+    Khartoum: { flag: '🇸🇩', countryAr: 'السودان', countryEn: 'Sudan', city: 'الخرطوم / Khartoum' },
+    Tunis: { flag: '🇹🇳', countryAr: 'تونس', countryEn: 'Tunisia', city: 'تونس / Tunis' },
+    Casablanca: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', city: 'الدار البيضاء / Casablanca' },
+    Rabat: { flag: '🇲🇦', countryAr: 'المغرب', countryEn: 'Morocco', city: 'الرباط / Rabat' },
+    Algiers: { flag: '🇩🇿', countryAr: 'الجزائر', countryEn: 'Algeria', city: 'الجزائر / Algiers' },
+    Tripoli: { flag: '🇱🇾', countryAr: 'ليبيا', countryEn: 'Libya', city: 'طرابلس / Tripoli' },
+    Mogadishu: { flag: '🇸🇴', countryAr: 'الصومال', countryEn: 'Somalia', city: 'مقديشو / Mogadishu' },
+    Istanbul: { flag: '🇹🇷', countryAr: 'تركيا', countryEn: 'Turkey', city: 'إسطنبول / Istanbul' },
+    Tehran: { flag: '🇮🇷', countryAr: 'إيران', countryEn: 'Iran', city: 'طهران / Tehran' },
+    London: { flag: '🇬🇧', countryAr: 'بريطانيا', countryEn: 'UK', city: 'لندن / London' },
+    Paris: { flag: '🇫🇷', countryAr: 'فرنسا', countryEn: 'France', city: 'باريس / Paris' },
+    Berlin: { flag: '🇩🇪', countryAr: 'ألمانيا', countryEn: 'Germany', city: 'برلين / Berlin' },
+    Rome: { flag: '🇮🇹', countryAr: 'إيطاليا', countryEn: 'Italy', city: 'روما / Rome' },
+    Madrid: { flag: '🇪🇸', countryAr: 'إسبانيا', countryEn: 'Spain', city: 'مدريد / Madrid' },
+    Moscow: { flag: '🇷🇺', countryAr: 'روسيا', countryEn: 'Russia', city: 'موسكو / Moscow' },
+    New_York: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', city: 'نيويورك / New York' },
+    Chicago: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', city: 'شيكاغو / Chicago' },
+    Los_Angeles: { flag: '🇺🇸', countryAr: 'أمريكا', countryEn: 'USA', city: 'لوس أنجلوس / Los Angeles' },
+    Toronto: { flag: '🇨🇦', countryAr: 'كندا', countryEn: 'Canada', city: 'تورونتو / Toronto' },
+    Tokyo: { flag: '🇯🇵', countryAr: 'اليابان', countryEn: 'Japan', city: 'طوكيو / Tokyo' },
+    Seoul: { flag: '🇰🇷', countryAr: 'كوريا الجنوبية', countryEn: 'South Korea', city: 'سيول / Seoul' },
+    Beijing: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', city: 'بكين / Beijing' },
+    Shanghai: { flag: '🇨🇳', countryAr: 'الصين', countryEn: 'China', city: 'شانغهاي / Shanghai' },
+    Kolkata: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', city: 'كولكاتا / Kolkata' },
+    Delhi: { flag: '🇮🇳', countryAr: 'الهند', countryEn: 'India', city: 'دلهي / Delhi' },
+    Sydney: { flag: '🇦🇺', countryAr: 'أستراليا', countryEn: 'Australia', city: 'سيدني / Sydney' }
   };
 
   const getCountryFlagEmoji = (countryCode) => {
@@ -2231,9 +2219,8 @@ export default function App() {
 
     const meta = CITY_COUNTRY_NAMES[cityKey];
     if (meta) {
-      const countryStr = language === 'ar' ? meta.countryAr : meta.countryEn;
-      const cityStr = language === 'ar' ? meta.cityAr : meta.cityEn;
-      return `${meta.flag} ${countryStr} - ${cityStr}${offsetStr}`;
+      const countryStr = language === 'ar' ? `${meta.countryAr} (${meta.countryEn})` : `${meta.countryEn} (${meta.countryAr})`;
+      return `${meta.flag} ${countryStr} - ${meta.city}${offsetStr}`;
     }
 
     const countryCode = CITY_COUNTRY_MAP[cityKey];
@@ -2395,17 +2382,14 @@ export default function App() {
       }
     };
 
-  setEmailSending(true);
-try {
-  // ✅ وضع رابط السيرفر المرفوع أونلاين بدلاً من localhost
-  const PRODUCTION_BACKEND = 'https://aethertest-backend.onrender.com';
-  const backendUrl = getBackendBaseUrl() || PRODUCTION_BACKEND;
-
-  const response = await fetch(`${backendUrl}/send-report`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+    setEmailSending(true);
+    try {
+      const backendUrl = getBackendBaseUrl() || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/send-report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
 
       const result = await response.json();
       if (!response.ok) {
