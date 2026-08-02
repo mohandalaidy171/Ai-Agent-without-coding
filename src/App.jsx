@@ -69,11 +69,15 @@ const UI_TEXT = {
     sendEmailButton: 'إرسال التقرير',
     sendingEmail: 'جاري إرسال البريد...',
     emailSentSuccess: 'تم إرسال التقرير بنجاح!',
-    emailSentSuccessEthereal: 'تم إرسال التقرير باستخدام معاينة Ethereal. يمكنك عرضه هنا:',
+    emailSentSuccessEthereal: 'تم إنشاء تقرير تجريبي عبر Ethereal (بيئة وهمية للاختبار). عاين التقرير من هنا:',
+    etherealNotice: '💡 ملاحظة: معاينة Ethereal مخصصة للتجربة فقط ولا ترسل رسائل فعلياً إلى صندوق البريد الحقيقي (Inbox). للإرسال إلى إيميل حقيقي، يرجى تعبئة بيانات خادم SMTP.',
     emailSentError: 'فشل إرسال التقرير:',
     emailValidationError: 'يرجى ملء الحقول المطلوبة قبل الإرسال.',
-    emailIncompleteSmtpError: 'يرجى ملء حقل مضيف SMTP واسم المستخدم وكلمة المرور سويةً أو تركها جميعها فارغة.',
-    smtpSettingsSection: 'إعدادات إرسال البريد',
+    emailIncompleteSmtpError: 'يرجى إدخال عنوان خادم SMTP (Host) عند إدخال اسم المستخم أو كلمة المرور.',
+    autoSendReport: 'إرسال التقرير تلقائياً عبر البريد بعد انتهاء الاختبارات',
+    saveEmailSettings: '💾 حفظ الإعدادات',
+    emailSettingsSaved: '✅ تم حفظ إعدادات البريد الإلكتروني و SMTP في المتصفح بنجاح!',
+    smtpSettingsSection: 'إعدادات إرسال البريد (SMTP)',
     smtpHost: 'خادم SMTP',
     smtpPort: 'منفذ SMTP',
     smtpSecure: 'استخدام اتصال آمن (TLS)',
@@ -94,6 +98,21 @@ const UI_TEXT = {
     passRate: 'نسبة النجاح',
     detailedResults: 'تفاصيل نتائج الخطوات لكل اختبار',
     noReportData: 'لا توجد أي بيانات لعرضها في التقرير حاليا.',
+    scheduleTypeLabel: 'نوع التكرار والجدولة',
+    scheduleOnce: '📅 مرة واحدة (تاريخ ووقت محدد)',
+    scheduleDaily: '☀️ يومي (كل يوم في ساعة محددة)',
+    scheduleWeekly: '📆 أسبوعي (يوم محدد وساعة محددة كل أسبوع)',
+    scheduleDayOfWeekLabel: 'اليوم المفضل من الأسبوع',
+    scheduleTimeLabel: 'وقت التنفيذ (ساعة : دقيقة)',
+    executionDateTime: 'تاريخ ووقت التنفيذ',
+    timezone: 'المنطقة الزمنية',
+    sunday: 'الأحد',
+    monday: 'الإثنين',
+    tuesday: 'الثلاثاء',
+    wednesday: 'الأربعاء',
+    thursday: 'الخميس',
+    friday: 'الجمعة',
+    saturday: 'السبت',
     notRun: 'لم يتم تشغيلها',
     running: 'جاري الاختبار',
     passed: 'ناجح',
@@ -169,11 +188,15 @@ const UI_TEXT = {
     sendEmailButton: 'Send Report',
     sendingEmail: 'Sending email...',
     emailSentSuccess: 'Report sent successfully!',
-    emailSentSuccessEthereal: 'Report sent using Ethereal preview. View it here:',
+    emailSentSuccessEthereal: 'Created a test report via Ethereal (mock preview environment). Preview report here:',
+    etherealNotice: '💡 Note: Ethereal preview is for testing layout only and does NOT deliver to real inboxes. To deliver to a real inbox, fill in your SMTP server settings.',
     emailSentError: 'Failed to send report:',
     emailValidationError: 'Please fill in all required email fields before sending.',
-    emailIncompleteSmtpError: 'Please fill in all SMTP host, username, and password fields or leave them all blank.',
-    smtpSettingsSection: 'Email delivery settings',
+    emailIncompleteSmtpError: 'Please enter the SMTP Host when providing SMTP credentials.',
+    autoSendReport: 'Automatically send report by email after test run completes',
+    saveEmailSettings: '💾 Save Settings',
+    emailSettingsSaved: '✅ Email & SMTP settings saved to browser successfully!',
+    smtpSettingsSection: 'Email Delivery Settings (SMTP)',
     smtpHost: 'SMTP host',
     smtpPort: 'SMTP port',
     smtpSecure: 'Use secure connection (TLS)',
@@ -194,6 +217,21 @@ const UI_TEXT = {
     passRate: 'Pass rate',
     detailedResults: 'Step results for each test',
     noReportData: 'No report data available yet.',
+    scheduleTypeLabel: 'Repeat Frequency & Schedule Type',
+    scheduleOnce: '📅 Once (Specific date & time)',
+    scheduleDaily: '☀️ Daily (Every day at specific time)',
+    scheduleWeekly: '📆 Weekly (Specific day of week & time)',
+    scheduleDayOfWeekLabel: 'Day of week',
+    scheduleTimeLabel: 'Execution time (HH:mm)',
+    executionDateTime: 'Execution date & time',
+    timezone: 'Timezone',
+    sunday: 'Sunday',
+    monday: 'Monday',
+    tuesday: 'Tuesday',
+    wednesday: 'Wednesday',
+    thursday: 'Thursday',
+    friday: 'Friday',
+    saturday: 'Saturday',
     notRun: 'Not run',
     running: 'Running',
     passed: 'Passed',
@@ -1032,7 +1070,10 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentCardId, setCurrentCardId] = useState(null);
   const [scheduledOrder, setScheduledOrder] = useState([]);
+  const [scheduleType, setScheduleType] = useState('once'); // 'once' | 'daily' | 'weekly'
   const [scheduleDateTime, setScheduleDateTime] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('09:00');
+  const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState('1'); // '0'=Sun, '1'=Mon, ..., '6'=Sat
   const [scheduleTimeZone, setScheduleTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Amman');
   const [scheduleStatus, setScheduleStatus] = useState('idle');
   const scheduleTimerRef = useRef(null);
@@ -1057,6 +1098,38 @@ export default function App() {
   const [isBugScanRunning, setIsBugScanRunning] = useState(false);
   const [bugScanProgress, setBugScanProgress] = useState('');
   const [bugReport, setBugReport] = useState(null);
+  const [reportEmail, setReportEmail] = useState(() => {
+    const defaults = {
+      senderEmail: '',
+      recipientEmail: '',
+      subject: 'AetherTest Report',
+      body: 'Please find the attached test report.',
+      smtpHost: '',
+      smtpPort: '587',
+      smtpSecure: false,
+      smtpUser: '',
+      smtpPass: '',
+      autoSend: false
+    };
+    try {
+      const saved = localStorage.getItem('aethertest_report_email');
+      return saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+    } catch {
+      return defaults;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('aethertest_report_email', JSON.stringify(reportEmail));
+    } catch (e) {
+      console.warn('Failed to save reportEmail to localStorage:', e);
+    }
+  }, [reportEmail]);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailFeedback, setEmailFeedback] = useState(null);
+  const [emailPreviewUrl, setEmailPreviewUrl] = useState('');
+  const [shouldAutoSendEmail, setShouldAutoSendEmail] = useState(false);
   const [codeModalOpen, setCodeModalOpen] = useState(false);
   const [codeModalTitle, setCodeModalTitle] = useState('');
   const [codeModalContent, setCodeModalContent] = useState('');
@@ -1218,6 +1291,10 @@ export default function App() {
         }
         return prev;
       });
+      
+      if (reportEmail.autoSend) {
+        setShouldAutoSendEmail(true);
+      }
     });
 
     socket.on('bug-scan-start', ({ targetUrl }) => {
@@ -1872,17 +1949,10 @@ export default function App() {
       .filter(Boolean);
   };
 
-  const getScheduledTimestamp = () => {
-    if (!scheduleDateTime) return null;
-    const [date, time] = scheduleDateTime.split('T');
-    if (!date || !time) return null;
-    const [year, month, day] = date.split('-').map(Number);
-    const [hour, minute] = time.split(':').map(Number);
-    if (!year || !month || !day || hour === undefined || minute === undefined) return null;
-
+  const computeUtcTimestampForZone = (year, month, day, hour, minute, zone) => {
     const formatForZone = (ts) => {
       const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone: scheduleTimeZone,
+        timeZone: zone,
         hour12: false,
         year: 'numeric',
         month: '2-digit',
@@ -1919,6 +1989,99 @@ export default function App() {
     return best || high;
   };
 
+  const getNowZoneParts = (zone) => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: zone,
+      hour12: false,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).formatToParts(new Date());
+    return {
+      year: parseInt(parts.find(p => p.type === 'year')?.value, 10),
+      month: parseInt(parts.find(p => p.type === 'month')?.value, 10),
+      day: parseInt(parts.find(p => p.type === 'day')?.value, 10),
+      hour: parseInt(parts.find(p => p.type === 'hour')?.value, 10),
+      minute: parseInt(parts.find(p => p.type === 'minute')?.value, 10)
+    };
+  };
+
+  const getDayOfWeekForZone = (ts, timeZone) => {
+    const dayStr = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short' }).format(new Date(ts));
+    const map = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+    return map[dayStr] ?? 0;
+  };
+
+  const getScheduledTimestamp = () => {
+    if (scheduleType === 'once') {
+      if (!scheduleDateTime) return null;
+      const [date, time] = scheduleDateTime.split('T');
+      if (!date || !time) return null;
+      const [year, month, day] = date.split('-').map(Number);
+      const [hour, minute] = time.split(':').map(Number);
+      if (!year || !month || !day || hour === undefined || minute === undefined) return null;
+      return computeUtcTimestampForZone(year, month, day, hour, minute, scheduleTimeZone);
+    }
+
+    if (scheduleType === 'daily') {
+      if (!scheduleTime) return null;
+      const [hour, minute] = scheduleTime.split(':').map(Number);
+      if (hour === undefined || minute === undefined) return null;
+
+      const nowParts = getNowZoneParts(scheduleTimeZone);
+      let targetTs = computeUtcTimestampForZone(nowParts.year, nowParts.month, nowParts.day, hour, minute, scheduleTimeZone);
+      if (targetTs <= Date.now() + 1000) {
+        const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        const tomParts = new Intl.DateTimeFormat('en-US', {
+          timeZone: scheduleTimeZone,
+          hour12: false,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(tomorrow);
+        const year = parseInt(tomParts.find(p => p.type === 'year')?.value, 10);
+        const month = parseInt(tomParts.find(p => p.type === 'month')?.value, 10);
+        const day = parseInt(tomParts.find(p => p.type === 'day')?.value, 10);
+        targetTs = computeUtcTimestampForZone(year, month, day, hour, minute, scheduleTimeZone);
+        if (targetTs <= Date.now() + 1000) {
+          targetTs += 24 * 60 * 60 * 1000;
+        }
+      }
+      return targetTs;
+    }
+
+    if (scheduleType === 'weekly') {
+      if (!scheduleTime) return null;
+      const [hour, minute] = scheduleTime.split(':').map(Number);
+      const targetDay = parseInt(scheduleDayOfWeek, 10);
+      if (hour === undefined || minute === undefined || isNaN(targetDay)) return null;
+
+      for (let offset = 0; offset < 14; offset++) {
+        const checkDate = new Date(Date.now() + offset * 24 * 60 * 60 * 1000);
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: scheduleTimeZone,
+          hour12: false,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(checkDate);
+        const year = parseInt(parts.find(p => p.type === 'year')?.value, 10);
+        const month = parseInt(parts.find(p => p.type === 'month')?.value, 10);
+        const day = parseInt(parts.find(p => p.type === 'day')?.value, 10);
+
+        const ts = computeUtcTimestampForZone(year, month, day, hour, minute, scheduleTimeZone);
+        const dayOfWeek = getDayOfWeekForZone(ts, scheduleTimeZone);
+        if (dayOfWeek === targetDay && ts > Date.now() + 1000) {
+          return ts;
+        }
+      }
+    }
+
+    return null;
+  };
+
   const TIMEZONE_OPTIONS = typeof Intl === 'object' && typeof Intl.supportedValuesOf === 'function'
     ? Intl.supportedValuesOf('timeZone')
     : ['UTC', 'Europe/London', 'America/New_York', 'Asia/Amman', 'Asia/Dubai', 'Asia/Kolkata', 'Asia/Tokyo'];
@@ -1953,12 +2116,18 @@ export default function App() {
       addLog(`⏰ الموعد المحدد وصل. تشغيل ${cardsToRun.length} اختبار الآن.`, 'system');
       setScheduleStatus('running');
       runCards(cardsToRun, language === 'ar' ? 'تشغيل مجدول' : 'scheduled run');
-      setScheduleStatus('idle');
+
+      if (scheduleType === 'once') {
+        setScheduleStatus('idle');
+      } else {
+        setScheduleStatus('scheduled');
+        addLog(`🔄 تم إعادة الجدولة التلقائية (${scheduleType === 'daily' ? 'يومي' : 'أسبوعي'}) للتنفيذ القادم.`, 'system');
+      }
       scheduleTimerRef.current = null;
     }, delay);
 
     return () => clearScheduleTimer();
-  }, [scheduleStatus, scheduleDateTime, scheduleTimeZone, scheduledOrder, language]);
+  }, [scheduleStatus, scheduleType, scheduleDateTime, scheduleTime, scheduleDayOfWeek, scheduleTimeZone, scheduledOrder, language]);
 
   const handleToggleScheduleSelection = (cardId) => {
     setScheduledOrder(prev => {
@@ -2014,6 +2183,97 @@ export default function App() {
     setScheduleStatus('idle');
     addLog('🛑 تم إلغاء الجدولة الحالية.', 'system');
   };
+
+  const getBackendBaseUrl = () => {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    return isLocalhost ? 'http://localhost:5000' : '';
+  };
+
+  const handleSendReportEmail = async () => {
+    setEmailFeedback(null);
+    setEmailPreviewUrl('');
+
+    if (!reportEmail.senderEmail.trim() || !reportEmail.recipientEmail.trim() || !reportEmail.subject.trim()) {
+      setEmailFeedback({ type: 'error', message: t('emailValidationError') });
+      return;
+    }
+
+    const hasUserOrPass = Boolean(String(reportEmail.smtpUser || '').trim() || String(reportEmail.smtpPass || '').trim());
+    if (hasUserOrPass && !String(reportEmail.smtpHost || '').trim()) {
+      setEmailFeedback({ type: 'error', message: t('emailIncompleteSmtpError') });
+      return;
+    }
+
+    let cleanHost = reportEmail.smtpHost.trim();
+    if (cleanHost.toLowerCase() === 'smtp.google.com' || cleanHost.toLowerCase() === 'gmail.com') {
+      cleanHost = 'smtp.gmail.com';
+    } else if (cleanHost.toLowerCase() === 'outlook.com' || cleanHost.toLowerCase() === 'hotmail.com') {
+      cleanHost = 'smtp-mail.outlook.com';
+    }
+
+    const portNum = parseInt(reportEmail.smtpPort, 10) || 587;
+    const secureFlag = portNum === 465 ? true : (portNum === 587 ? false : Boolean(reportEmail.smtpSecure));
+
+    const reportHtml = buildReportHtml();
+    const payload = {
+      senderEmail: reportEmail.senderEmail.trim(),
+      recipientEmail: reportEmail.recipientEmail.trim(),
+      subject: reportEmail.subject.trim(),
+      text: reportEmail.body,
+      reportHtml,
+      smtp: {
+        host: cleanHost,
+        port: portNum,
+        secure: secureFlag,
+        user: reportEmail.smtpUser.trim(),
+        pass: reportEmail.smtpPass
+      }
+    };
+
+    setEmailSending(true);
+    try {
+      const backendUrl = getBackendBaseUrl() || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/send-report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || result.message || 'Failed to send email');
+      }
+
+      if (result.previewUrl) {
+        setEmailFeedback({ type: 'success', message: t('emailSentSuccessEthereal') });
+        setEmailPreviewUrl(result.previewUrl);
+      } else {
+        setEmailFeedback({ type: 'success', message: t('emailSentSuccess') });
+      }
+    } catch (error) {
+      setEmailFeedback({ type: 'error', message: `${t('emailSentError')} ${error.message}` });
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const handleSaveEmailSettings = () => {
+    try {
+      localStorage.setItem('aethertest_report_email', JSON.stringify(reportEmail));
+      setEmailFeedback({ type: 'success', message: t('emailSettingsSaved') });
+    } catch {
+      setEmailFeedback({ type: 'error', message: 'Failed to save settings.' });
+    }
+  };
+
+  useEffect(() => {
+    if (shouldAutoSendEmail && !isRunning) {
+      if (reportEmail.senderEmail.trim() && reportEmail.recipientEmail.trim()) {
+        handleSendReportEmail();
+      }
+      setShouldAutoSendEmail(false);
+    }
+  }, [shouldAutoSendEmail, isRunning]);
 
   const runCards = (cardsToRun, contextLabel = '') => {
     if (!cardsToRun || cardsToRun.length === 0) {
@@ -2365,6 +2625,150 @@ export default function App() {
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+          <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', marginBottom: '1rem' }}>{t('sendReportByEmail')} (اختياري / للإرسال التلقائي)</h3>
+          <div className="credentials-grid">
+            <div className="input-wrapper">
+              <label htmlFor="inline-sender-email">{t('senderEmail')}</label>
+              <input
+                id="inline-sender-email"
+                type="email"
+                className="input-field"
+                value={reportEmail.senderEmail}
+                onChange={(e) => setReportEmail(prev => ({ ...prev, senderEmail: e.target.value }))}
+                placeholder="sender@example.com"
+              />
+            </div>
+            <div className="input-wrapper">
+              <label htmlFor="inline-recipient-email">{t('recipientEmail')}</label>
+              <input
+                id="inline-recipient-email"
+                type="email"
+                className="input-field"
+                value={reportEmail.recipientEmail}
+                onChange={(e) => setReportEmail(prev => ({ ...prev, recipientEmail: e.target.value }))}
+                placeholder="recipient@example.com"
+              />
+            </div>
+            <div className="input-wrapper">
+              <label htmlFor="inline-email-subject">{t('emailSubject')}</label>
+              <input
+                id="inline-email-subject"
+                type="text"
+                className="input-field"
+                value={reportEmail.subject}
+                onChange={(e) => setReportEmail(prev => ({ ...prev, subject: e.target.value }))}
+              />
+            </div>
+            <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
+              <label htmlFor="inline-email-body">{t('emailBody')}</label>
+              <textarea
+                id="inline-email-body"
+                className="input-field"
+                rows={2}
+                value={reportEmail.body}
+                onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
+              />
+            </div>
+          </div>
+          <details style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main)' }}>
+              ⚙️ {t('smtpSettingsSection')} ({t('smtpHost')}, {t('smtpPort')}, {t('smtpUser')})
+            </summary>
+            <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div className="input-wrapper">
+                <label htmlFor="inline-smtp-host">{t('smtpHost')}</label>
+                <input
+                  id="inline-smtp-host"
+                  type="text"
+                  className="input-field"
+                  value={reportEmail.smtpHost}
+                  onChange={(e) => setReportEmail(prev => ({ ...prev, smtpHost: e.target.value }))}
+                  placeholder="smtp.gmail.com"
+                />
+              </div>
+              <div className="input-wrapper">
+                <label htmlFor="inline-smtp-port">{t('smtpPort')}</label>
+                <input
+                  id="inline-smtp-port"
+                  type="text"
+                  className="input-field"
+                  value={reportEmail.smtpPort}
+                  onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPort: e.target.value }))}
+                  placeholder="587 / 465"
+                />
+              </div>
+              <div className="input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.2rem' }}>
+                <input
+                  id="inline-smtp-secure"
+                  type="checkbox"
+                  checked={reportEmail.smtpSecure}
+                  onChange={(e) => setReportEmail(prev => ({ ...prev, smtpSecure: e.target.checked }))}
+                />
+                <label htmlFor="inline-smtp-secure" style={{ fontSize: '0.85rem' }}>{t('smtpSecure')}</label>
+              </div>
+              <div className="input-wrapper">
+                <label htmlFor="inline-smtp-user">{t('smtpUser')}</label>
+                <input
+                  id="inline-smtp-user"
+                  type="text"
+                  className="input-field"
+                  value={reportEmail.smtpUser}
+                  onChange={(e) => setReportEmail(prev => ({ ...prev, smtpUser: e.target.value }))}
+                  placeholder="username@example.com"
+                />
+              </div>
+              <div className="input-wrapper">
+                <label htmlFor="inline-smtp-pass">{t('smtpPass')}</label>
+                <input
+                  id="inline-smtp-pass"
+                  type="password"
+                  className="input-field"
+                  value={reportEmail.smtpPass}
+                  onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPass: e.target.value }))}
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+            <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{t('smtpHint')}</p>
+          </details>
+
+          <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              <input
+                type="checkbox"
+                checked={reportEmail.autoSend || false}
+                onChange={(e) => setReportEmail(prev => ({ ...prev, autoSend: e.target.checked }))}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              {t('autoSendReport')}
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
+              <button className="btn btn-secondary" onClick={handleSaveEmailSettings} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+                {t('saveEmailSettings')}
+              </button>
+              <button className="btn btn-success" onClick={handleSendReportEmail} disabled={emailSending} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
+                {emailSending ? t('sendingEmail') : t('sendEmailButton')}
+              </button>
+              {emailFeedback && (
+                <div style={{ color: emailFeedback.type === 'success' ? 'var(--success)' : 'var(--danger)', fontWeight: 600, fontSize: '0.85rem' }}>
+                  {emailFeedback.message}
+                </div>
+              )}
+              {emailPreviewUrl && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '100%' }}>
+                  <div style={{ color: 'var(--success)', fontSize: '0.85rem' }}>
+                    <a href={emailPreviewUrl} target="_blank" rel="noreferrer">{emailPreviewUrl}</a>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '0.4rem 0.6rem', borderRadius: '6px', marginTop: '0.25rem' }}>
+                    {t('etherealNotice')}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -3377,19 +3781,69 @@ export default function App() {
               </div>
 
               <div style={{ display: 'grid', gap: '0.75rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
+                <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <span>{t('scheduleTypeLabel')}</span>
+                  <select
+                    className="input-field"
+                    value={scheduleType}
+                    onChange={(e) => setScheduleType(e.target.value)}
+                    disabled={isRunning}
+                  >
+                    <option value="once">{t('scheduleOnce')}</option>
+                    <option value="daily">{t('scheduleDaily')}</option>
+                    <option value="weekly">{t('scheduleWeekly')}</option>
+                  </select>
+                </label>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.8rem' }}>
+                  {scheduleType === 'once' && (
+                    <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      <span>{t('executionDateTime')}</span>
+                      <input
+                        type="datetime-local"
+                        className="input-field"
+                        value={scheduleDateTime}
+                        onChange={(e) => setScheduleDateTime(e.target.value)}
+                        disabled={isRunning}
+                      />
+                    </label>
+                  )}
+
+                  {scheduleType === 'weekly' && (
+                    <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      <span>{t('scheduleDayOfWeekLabel')}</span>
+                      <select
+                        className="input-field"
+                        value={scheduleDayOfWeek}
+                        onChange={(e) => setScheduleDayOfWeek(e.target.value)}
+                        disabled={isRunning}
+                      >
+                        <option value="0">{t('sunday')}</option>
+                        <option value="1">{t('monday')}</option>
+                        <option value="2">{t('tuesday')}</option>
+                        <option value="3">{t('wednesday')}</option>
+                        <option value="4">{t('thursday')}</option>
+                        <option value="5">{t('friday')}</option>
+                        <option value="6">{t('saturday')}</option>
+                      </select>
+                    </label>
+                  )}
+
+                  {(scheduleType === 'daily' || scheduleType === 'weekly') && (
+                    <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                      <span>{t('scheduleTimeLabel')}</span>
+                      <input
+                        type="time"
+                        className="input-field"
+                        value={scheduleTime}
+                        onChange={(e) => setScheduleTime(e.target.value)}
+                        disabled={isRunning}
+                      />
+                    </label>
+                  )}
+
                   <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <span>{language === 'ar' ? 'تاريخ ووقت التنفيذ' : 'Execution date & time'}</span>
-                    <input
-                      type="datetime-local"
-                      className="input-field"
-                      value={scheduleDateTime}
-                      onChange={(e) => setScheduleDateTime(e.target.value)}
-                      disabled={isRunning}
-                    />
-                  </label>
-                  <label className="input-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                    <span>{language === 'ar' ? 'المنطقة الزمنية' : 'Timezone'}</span>
+                    <span>{t('timezone')}</span>
                     <select
                       className="input-field"
                       value={scheduleTimeZone}
@@ -3422,9 +3876,9 @@ export default function App() {
                     {scheduleStatus === 'scheduled' && (language === 'ar' ? 'مجدولة للتنفيذ' : 'Scheduled to run')}
                     {scheduleStatus === 'running' && (language === 'ar' ? 'تشغيل الآن' : 'Running now')}
                   </div>
-                  {scheduleDateTime && (
+                  {getScheduledTimestamp() && (
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                      {language === 'ar' ? 'الوقت المختار' : 'Selected time'}: {new Date(getScheduledTimestamp() || Date.now()).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US', { timeZone: scheduleTimeZone, year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      {language === 'ar' ? 'الموعد القادم للتنفيذ' : 'Next scheduled run'}: {new Date(getScheduledTimestamp()).toLocaleString(language === 'ar' ? 'ar-EG' : 'en-US', { timeZone: scheduleTimeZone, weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </div>
                   )}
                 </div>
@@ -3716,8 +4170,147 @@ export default function App() {
                   <span className="stat-value">{passRate}%</span>
                 </div>
               </div>
- 
- 
+
+              <section className="email-report-panel" style={{ margin: '1.5rem 0', padding: '1rem', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', background: 'rgba(255,255,255,0.02)' }}>
+                <h3 style={{ marginBottom: '1rem' }}>{t('sendReportByEmail')}</h3>
+                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                  <div className="input-wrapper">
+                    <label htmlFor="sender-email-input">{t('senderEmail')}</label>
+                    <input
+                      id="sender-email-input"
+                      type="email"
+                      className="input-field"
+                      value={reportEmail.senderEmail}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, senderEmail: e.target.value }))}
+                      placeholder="sender@example.com"
+                    />
+                  </div>
+                  <div className="input-wrapper">
+                    <label htmlFor="recipient-email-input">{t('recipientEmail')}</label>
+                    <input
+                      id="recipient-email-input"
+                      type="email"
+                      className="input-field"
+                      value={reportEmail.recipientEmail}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, recipientEmail: e.target.value }))}
+                      placeholder="recipient@example.com"
+                    />
+                  </div>
+                  <div className="input-wrapper">
+                    <label htmlFor="email-subject-input">{t('emailSubject')}</label>
+                    <input
+                      id="email-subject-input"
+                      type="text"
+                      className="input-field"
+                      value={reportEmail.subject}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, subject: e.target.value }))}
+                    />
+                  </div>
+                  <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
+                    <label htmlFor="email-body-input">{t('emailBody')}</label>
+                    <textarea
+                      id="email-body-input"
+                      className="input-field"
+                      rows={4}
+                      value={reportEmail.body}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
+                  <h4 style={{ marginBottom: '0.75rem' }}>{t('smtpSettingsSection')}</h4>
+                  <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                    <div className="input-wrapper">
+                      <label htmlFor="smtp-host-input">{t('smtpHost')}</label>
+                      <input
+                        id="smtp-host-input"
+                        type="text"
+                        className="input-field"
+                        value={reportEmail.smtpHost}
+                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpHost: e.target.value }))}
+                        placeholder="smtp.example.com"
+                      />
+                    </div>
+                    <div className="input-wrapper">
+                      <label htmlFor="smtp-port-input">{t('smtpPort')}</label>
+                      <input
+                        id="smtp-port-input"
+                        type="text"
+                        className="input-field"
+                        value={reportEmail.smtpPort}
+                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPort: e.target.value }))}
+                      />
+                    </div>
+                    <div className="input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
+                      <input
+                        id="smtp-secure-input"
+                        type="checkbox"
+                        checked={reportEmail.smtpSecure}
+                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpSecure: e.target.checked }))}
+                      />
+                      <label htmlFor="smtp-secure-input">{t('smtpSecure')} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({t('smtpSecureHelp')})</span></label>
+                    </div>
+                    <div className="input-wrapper">
+                      <label htmlFor="smtp-user-input">{t('smtpUser')}</label>
+                      <input
+                        id="smtp-user-input"
+                        type="text"
+                        className="input-field"
+                        value={reportEmail.smtpUser}
+                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpUser: e.target.value }))}
+                      />
+                    </div>
+                    <div className="input-wrapper">
+                      <label htmlFor="smtp-pass-input">{t('smtpPass')}</label>
+                      <input
+                        id="smtp-pass-input"
+                        type="password"
+                        className="input-field"
+                        value={reportEmail.smtpPass}
+                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPass: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('smtpHint')}</p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={reportEmail.autoSend || false}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, autoSend: e.target.checked }))}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    {t('autoSendReport')}
+                  </label>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button className="btn btn-secondary" onClick={handleSaveEmailSettings}>
+                      {t('saveEmailSettings')}
+                    </button>
+                    <button className="btn btn-success" onClick={handleSendReportEmail} disabled={emailSending}>
+                      {emailSending ? t('sendingEmail') : t('sendEmailButton')}
+                    </button>
+                  </div>
+                  {emailFeedback && (
+                    <div style={{ color: emailFeedback.type === 'success' ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
+                      {emailFeedback.message}
+                    </div>
+                  )}
+                  {emailPreviewUrl && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '100%' }}>
+                      <div style={{ color: 'var(--success)' }}>
+                        <a href={emailPreviewUrl} target="_blank" rel="noreferrer">{emailPreviewUrl}</a>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '0.5rem 0.75rem', borderRadius: '8px', marginTop: '0.25rem' }}>
+                        {t('etherealNotice')}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </section>
+
               {/* Detailed Test Results */}
               <div className="report-details-section">
                 <h3>{t('detailedResults')}</h3>
