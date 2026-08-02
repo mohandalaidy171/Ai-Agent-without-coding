@@ -2383,14 +2383,17 @@ export default function App() {
       }
     };
 
-    setEmailSending(true);
-    try {
-      const backendUrl = getBackendBaseUrl() || 'http://localhost:5000';
-      const response = await fetch(`${backendUrl}/send-report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+  setEmailSending(true);
+try {
+  // ✅ وضع رابط السيرفر المرفوع أونلاين بدلاً من localhost
+  const PRODUCTION_BACKEND = 'https://aethertest-backend.onrender.com';
+  const backendUrl = getBackendBaseUrl() || PRODUCTION_BACKEND;
+
+  const response = await fetch(`${backendUrl}/send-report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
 
       const result = await response.json();
       if (!response.ok) {
