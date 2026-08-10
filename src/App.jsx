@@ -1171,10 +1171,12 @@ export default function App() {
     });
 
     socket.on('connect_error', (error) => {
+      setIsRunning(false);
       console.warn(`WebSocket connect error: ${error.message}`);
     });
 
     socket.on('disconnect', () => {
+      setIsRunning(false);
       addLog('تم قطع الاتصال بالخادم', 'error');
     });
 
@@ -1259,6 +1261,8 @@ export default function App() {
     });
 
     socket.on('global-error', ({ error }) => {
+      setIsRunning(false);
+      setCurrentCardId(null);
       addLog(`🚨 خطأ عام في المتصفح التلقائي: ${error}`, 'error');
     });
 
@@ -1940,8 +1944,10 @@ export default function App() {
   };
 
   const resetAllStatuses = () => {
+    setIsRunning(false);
+    setCurrentCardId(null);
     setTestCards(testCards.map(c => ({ ...c, status: 'idle', steps: [], logHistory: [], videoUrl: '' })));
-    addLog('🔄 تم تصفير نتائج الاختبارات السابقة.', 'system');
+    addLog('🔄 تم تصفير نتائج الاختبارات السابقة وإعادة الجاهزية.', 'system');
   };
 
   const getSelectedScheduledCards = () => {
@@ -2479,6 +2485,8 @@ export default function App() {
     });
   };
 
+
+
   const runSuite = () => {
     if (testCards.length === 0 && !credentials.url) {
       addLog('⚠️ لا يوجد أي كارت اختبار أو رابط موقع لتشغيله! يرجى إدخال الرابط أو إضافة كارت أولاً.', 'error');
@@ -2564,8 +2572,13 @@ export default function App() {
   };
 
   const stopSuite = () => {
-    // Simply refreshing the page or disconnect reconnect will kill current Playwright
-    window.location.reload();
+    setIsRunning(false);
+    setCurrentCardId(null);
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current.connect();
+    }
+    addLog('🛑 تم إيقاف الجلسة فوراً وتصفير حالة التشغيل.', 'error');
   };
 
   // Print/Save PDF handler
