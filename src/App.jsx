@@ -1160,7 +1160,7 @@ export default function App() {
   useEffect(() => {
     // Connect directly to backend port 5000 on localhost, or fallback to deployed Render backend URL
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-without-coding.onrender.com');
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-server-03cl.onrender.com');
     const socket = io(backendUrl, {
       transports: ['websocket', 'polling']
     });
@@ -2339,7 +2339,7 @@ export default function App() {
 
   const getBackendBaseUrl = () => {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    return import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-without-coding.onrender.com');
+    return import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-server-03cl.onrender.com');
   };
 
   const handleSendReportEmail = async () => {
