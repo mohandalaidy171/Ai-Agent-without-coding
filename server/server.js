@@ -177,13 +177,20 @@ app.post('/send-report', async (req, res) => {
 
       let transportConfig;
       if (host === 'smtp.gmail.com') {
+        const portNum = parseInt(smtp.port, 10) || 465;
+        const useSecure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
         transportConfig = {
-          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: portNum,
+          secure: useSecure,
           auth: {
             user: (smtp.user || senderEmail).trim(),
             pass: smtp.pass ? smtp.pass.trim() : ''
           },
-          tls: { rejectUnauthorized: false }
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 25000,
+          greetingTimeout: 20000,
+          socketTimeout: 25000
         };
       } else {
         transportConfig = {
@@ -223,9 +230,8 @@ app.post('/send-report', async (req, res) => {
       });
     }
 
-    const fromAddress = senderEmail.trim();
-    const info = await transporter.sendMail({
-      from: fromAddress,
+    const mailOptions = {
+      from: senderEmail.trim(),
       to: recipientEmail.trim(),
       subject: subject.trim(),
       text: text || 'Please find the attached test report.',
@@ -237,7 +243,33 @@ app.post('/send-report', async (req, res) => {
           contentType: 'text/html'
         }
       ]
-    });
+    };
+
+    let info;
+    try {
+      info = await transporter.sendMail(mailOptions);
+    } catch (sendErr) {
+      if ((sendErr.message.includes('ETIMEDOUT') || sendErr.message.includes('timeout') || sendErr.code === 'ETIMEDOUT') && useCustomSmtp) {
+        console.log('Primary SMTP timeout on cloud host. Retrying with Port 465 SSL fallback...');
+        const fallbackConfig = {
+          host: smtp.host ? smtp.host.trim() : 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: (smtp.user || senderEmail).trim(),
+            pass: smtp.pass ? smtp.pass.trim() : ''
+          },
+          tls: { rejectUnauthorized: false },
+          connectionTimeout: 25000,
+          greetingTimeout: 20000,
+          socketTimeout: 25000
+        };
+        const fallbackTransporter = nodemailer.createTransport(fallbackConfig);
+        info = await fallbackTransporter.sendMail(mailOptions);
+      } else {
+        throw sendErr;
+      }
+    }
 
     if (!useCustomSmtp) {
       previewUrl = nodemailer.getTestMessageUrl(info);
