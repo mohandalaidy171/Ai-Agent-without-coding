@@ -176,8 +176,48 @@ app.post('/send-report', async (req, res) => {
   const hostHeader = req.headers['x-forwarded-host'] || req.get('host');
   const reportHttpUrl = `${protocol}://${hostHeader}/reports/${reportFileName}`;
 
-  // Try HTTPS REST API sending first (Port 443 - Never blocked by Render or cloud firewalls)
+  // Try HTTPS REST API sending (Port 443 - Never blocked by Render or cloud firewalls)
   const activeApiKey = (apiKey || smtp?.apiKey || process.env.RESEND_API_KEY || '').trim();
+  const brevoApiKey = (smtp?.brevoApiKey || req.body.brevoApiKey || process.env.BREVO_API_KEY || '').trim();
+
+  if (brevoApiKey) {
+    console.log('Sending email via Brevo HTTPS REST API (Port 443)...');
+    try {
+      const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': brevoApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'AetherTest AI', email: senderEmail.trim() },
+          to: [{ email: recipientEmail.trim() }],
+          subject: subject.trim(),
+          htmlContent: `<div><p>${String(text || 'Please find the attached test report.').replace(/\n/g, '<br/>')}</p><p><a href="${reportHttpUrl}" target="_blank">Open Full Interactive Web Report</a></p></div>`,
+          attachment: [
+            {
+              name: 'aethertest-report.html',
+              content: Buffer.from(reportHtml, 'utf8').toString('base64')
+            }
+          ]
+        })
+      });
+      const brevoData = await brevoResponse.json();
+      if (brevoResponse.ok) {
+        return res.json({
+          success: true,
+          delivered: true,
+          previewUrl: reportHttpUrl,
+          message: `✅ تم إرسال التقرير بنجاح إلى البريد الإلكتروني (${recipientEmail.trim()})!`
+        });
+      } else {
+        console.warn('Brevo HTTPS API returned error:', brevoData);
+      }
+    } catch (brevoErr) {
+      console.error('Brevo HTTPS API exception:', brevoErr.message);
+    }
+  }
+
   if (activeApiKey) {
     console.log('Sending email via Resend HTTPS REST API (Port 443)...');
     try {
@@ -204,8 +244,9 @@ app.post('/send-report', async (req, res) => {
       if (apiResponse.ok) {
         return res.json({
           success: true,
+          delivered: true,
           previewUrl: reportHttpUrl,
-          message: `✅ تم إرسال التقرير بنجاح إلى البريد الإلكتروني (${recipientEmail})!`
+          message: `✅ تم إرسال التقرير بنجاح إلى البريد الإلكتروني (${recipientEmail.trim()})!`
         });
       } else {
         console.warn('Resend HTTPS API returned error:', apiData);
