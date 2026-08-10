@@ -166,33 +166,44 @@ app.post('/send-report', async (req, res) => {
 
     if (useCustomSmtp) {
       let host = smtp.host.trim();
-      if (host.toLowerCase() === 'smtp.google.com' || host.toLowerCase() === 'gmail.com') {
+      if (host.toLowerCase() === 'smtp.google.com' || host.toLowerCase() === 'gmail.com' || host.toLowerCase().includes('gmail')) {
         host = 'smtp.gmail.com';
-      } else if (host.toLowerCase() === 'outlook.com' || host.toLowerCase() === 'hotmail.com') {
+      } else if (host.toLowerCase() === 'outlook.com' || host.toLowerCase() === 'hotmail.com' || host.toLowerCase().includes('outlook')) {
         host = 'smtp-mail.outlook.com';
       }
 
       const portNum = parseInt(smtp.port, 10) || 587;
-      // Port 465 requires direct SSL (secure: true). Port 587 uses STARTTLS (secure: false).
       const secure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
 
-      const transportConfig = {
-        host,
-        port: portNum,
-        secure,
-        connectionTimeout: 15000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-        tls: {
-          rejectUnauthorized: false
-        }
-      };
-
-      if (smtp.user && String(smtp.user).trim()) {
-        transportConfig.auth = {
-          user: smtp.user.trim(),
-          pass: smtp.pass || ''
+      let transportConfig;
+      if (host === 'smtp.gmail.com') {
+        transportConfig = {
+          service: 'gmail',
+          auth: {
+            user: (smtp.user || senderEmail).trim(),
+            pass: smtp.pass ? smtp.pass.trim() : ''
+          },
+          tls: { rejectUnauthorized: false }
         };
+      } else {
+        transportConfig = {
+          host,
+          port: portNum,
+          secure,
+          connectionTimeout: 20000,
+          greetingTimeout: 15000,
+          socketTimeout: 20000,
+          tls: {
+            rejectUnauthorized: false
+          }
+        };
+
+        if (smtp.user && String(smtp.user).trim()) {
+          transportConfig.auth = {
+            user: smtp.user.trim(),
+            pass: smtp.pass || ''
+          };
+        }
       }
 
       transporter = nodemailer.createTransport(transportConfig);
@@ -202,9 +213,9 @@ app.post('/send-report', async (req, res) => {
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false,
-        connectionTimeout: 15000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
+        connectionTimeout: 20000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
         auth: {
           user: testAccount.user,
           pass: testAccount.pass
@@ -238,7 +249,13 @@ app.post('/send-report', async (req, res) => {
     if (!smtp || !smtp.host) {
       cachedEtherealAccount = null;
     }
-    return res.status(500).json({ error: error.message || 'Failed to send email report.' });
+    let errMsg = error.message || 'Failed to send email report.';
+    if (errMsg.includes('ETIMEDOUT') || errMsg.includes('Connection timeout') || errMsg.includes('Greeting never received')) {
+      errMsg = 'انتهت مهلة الاتصال بالبريد الإلكتروني (Connection timeout). تفقّد عنوان SMTP والمنفذ (Port 587/465). في حال استخدام Gmail، يرجى استخدام "كلمة مرور التطبيقات (App Password)" المكونة من 16 حرفاً.';
+    } else if (errMsg.includes('Invalid login') || errMsg.includes('535-5.7.8')) {
+      errMsg = 'فشل تسجيل الدخول في بريد SMTP. بالنسبة لبريد Gmail، يتطلب Google استخدام "كلمة مرور التطبيق (App Password)" وليس كلمة المرور العادية.';
+    }
+    return res.status(500).json({ error: errMsg });
   }
 });
 
