@@ -231,6 +231,7 @@ app.post('/send-report', async (req, res) => {
       const portNum = parseInt(smtp.port, 10) || 587;
       const secure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
 
+      let transportConfig;
       if (host === 'smtp.gmail.com') {
         const portNum = parseInt(smtp.port, 10) || 465;
         const useSecure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
