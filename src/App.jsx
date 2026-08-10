@@ -4519,15 +4519,11 @@ export default function App() {
                       onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
                     />
                   </div>
-                </div>
 
-                <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
-                  <h4 style={{ marginBottom: '0.75rem' }}>{t('smtpSettingsSection')}</h4>
-
-                  {/* HTTPS Direct Email API Key Option for Cloud Hosts */}
-                  <div className="input-wrapper" style={{ marginBottom: '1.25rem', background: 'rgba(99, 85, 255, 0.08)', padding: '0.85rem', borderRadius: '10px', border: '1px solid var(--primary-glow)' }}>
-                    <label htmlFor="resend-api-key" style={{ fontWeight: 'bold', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      🚀 {language === 'ar' ? 'مفتاح Resend API لإرسال الإيميلات الفوري عبر HTTPS (مستوصى به للسيرفرات السحابية)' : 'Resend API Key (HTTPS Direct Email API for Cloud Servers)'}
+                  {/* Always Visible HTTPS Direct Email API Key Field */}
+                  <div className="input-wrapper" style={{ gridColumn: '1 / -1', background: 'rgba(99, 85, 255, 0.12)', padding: '1rem', borderRadius: '12px', border: '2px solid var(--primary)', marginTop: '0.5rem', boxShadow: '0 4px 15px rgba(99, 85, 255, 0.15)' }}>
+                    <label htmlFor="resend-api-key" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      🚀 {language === 'ar' ? 'مفتاح Resend API للإرسال المباشر للإيميل (مستوصى به للسيرفرات أونلاين)' : 'Resend API Key (Recommended for Cloud Servers)'}
                     </label>
                     <input
                       id="resend-api-key"
@@ -4536,14 +4532,18 @@ export default function App() {
                       value={reportEmail.apiKey || ''}
                       onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
                       placeholder="re_123456789..."
-                      style={{ marginTop: '0.35rem' }}
+                      style={{ marginTop: '0.5rem', fontSize: '0.95rem', padding: '0.6rem 0.8rem', border: '1px solid var(--primary)' }}
                     />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem', lineHeight: '1.4' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-main)', display: 'block', marginTop: '0.5rem', lineHeight: '1.5' }}>
                       {language === 'ar' 
-                        ? '💡 نصيحة: إذا كنت تستخدم سيرفر أونلاين مثل Render، احصل على مفتاح مجاني في 10 ثوانٍ من resend.com لضمان الإرسال المباشر للإيميل الحقيقي دون حظر المنافذ.' 
-                        : '💡 Tip: On cloud servers like Render, get a free key from resend.com in 10 seconds for direct inbox delivery.'}
+                        ? '💡 للإرسال الفوري لبريدك بدون حظر المنافذ: احصل على مفتاح مجاني في 10 ثوانٍ من موقع resend.com وضعه هنا.' 
+                        : '💡 For direct email delivery without port blocks: Get a free key from resend.com in 10 seconds and paste it here.'}
                     </span>
                   </div>
+                </div>
+
+                <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
+                  <h4 style={{ marginBottom: '0.75rem' }}>{t('smtpSettingsSection')}</h4>
                   <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
                     <div className="input-wrapper">
                       <label htmlFor="smtp-host-input">{t('smtpHost')}</label>
