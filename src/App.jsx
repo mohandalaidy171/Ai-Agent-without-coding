@@ -2339,7 +2339,7 @@ export default function App() {
 
   const getBackendBaseUrl = () => {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    return isLocalhost ? 'http://localhost:5000' : '';
+    return import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-without-coding.onrender.com');
   };
 
   const handleSendReportEmail = async () => {
@@ -2467,7 +2467,8 @@ export default function App() {
 
     if (!socketRef.current?.connected) {
       setIsRunning(false);
-      addLog('لا يوجد اتصال مع السيرفر. شغّل npm run dev أو npm run server ثم حاول مرة ثانية.', 'error');
+      if (socketRef.current) socketRef.current.connect();
+      addLog('⏳ جاري الاتصال بالسيرفر... (سيرفر Render المجاني يستغرق 15-30 ثانية للاستيقاظ لأول مرة). يرجى الانتظار بضع ثوانٍ ثم الضغط مجدداً.', 'error');
       return;
     }
 
@@ -2520,7 +2521,8 @@ export default function App() {
     // Emit WebSockets trigger for just this card
     if (!socketRef.current?.connected) {
       setIsRunning(false);
-      addLog('لا يوجد اتصال مع السيرفر. شغّل npm run dev أو npm run server ثم حاول مرة ثانية.', 'error');
+      if (socketRef.current) socketRef.current.connect();
+      addLog('⏳ جاري الاتصال بالسيرفر... (سيرفر Render المجاني يستغرق 15-30 ثانية للاستيقاظ لأول مرة). يرجى الانتظار بضع ثوانٍ ثم الضغط مجدداً.', 'error');
       return;
     }
 
