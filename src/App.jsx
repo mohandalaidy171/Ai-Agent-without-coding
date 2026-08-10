@@ -4474,8 +4474,30 @@ export default function App() {
                 </div>
               </div>
 
-              <section className="email-report-panel" style={{ margin: '1.5rem 0', padding: '1rem', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', background: 'rgba(255,255,255,0.02)' }}>
-                <h3 style={{ marginBottom: '1rem' }}>{t('sendReportByEmail')}</h3>
+              <section className="email-report-panel" style={{ margin: '1.5rem 0', padding: '1.25rem', border: '2px solid var(--primary)', borderRadius: '14px', background: 'var(--soft-panel-bg)' }}>
+                <h3 style={{ marginBottom: '1rem', color: 'var(--primary)', fontWeight: '800' }}>{t('sendReportByEmail')}</h3>
+
+                {/* Highly Visible Resend API Key Field at top of email section */}
+                <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '2px solid #22c55e', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem' }}>
+                  <label htmlFor="resend-api-key" style={{ fontWeight: '800', color: '#16a34a', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
+                    🚀 {language === 'ar' ? 'مفتاح Resend API للإرسال الفوري للبريد (مستوصى به لـ Render/Vercel)' : 'Resend API Key (Recommended for Cloud Servers)'}
+                  </label>
+                  <input
+                    id="resend-api-key"
+                    type="password"
+                    className="input-field"
+                    value={reportEmail.apiKey || ''}
+                    onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
+                    placeholder="ضع الكود هنا (يبدأ بـ re_...)"
+                    style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1.5px solid #22c55e', background: 'var(--control-bg)', color: 'var(--text-main)', fontWeight: 'bold' }}
+                  />
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.4rem', lineHeight: '1.4' }}>
+                    {language === 'ar' 
+                      ? '💡 نصيحة: احصل على مفتاح مجاني في 10 ثوانٍ من موقع resend.com وضعه هنا لضمان الإرسال المباشر للإيميل الحقيقي دون حظر المنافذ.' 
+                      : '💡 Tip: Get a free key from resend.com in 10 seconds for direct email inbox delivery.'}
+                  </span>
+                </div>
+
                 <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
                   <div className="input-wrapper">
                     <label htmlFor="sender-email-input">{t('senderEmail')}</label>
@@ -4518,27 +4540,6 @@ export default function App() {
                       value={reportEmail.body}
                       onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
                     />
-                  </div>
-
-                  {/* Always Visible HTTPS Direct Email API Key Field */}
-                  <div className="input-wrapper" style={{ gridColumn: '1 / -1', background: 'rgba(99, 85, 255, 0.12)', padding: '1rem', borderRadius: '12px', border: '2px solid var(--primary)', marginTop: '0.5rem', boxShadow: '0 4px 15px rgba(99, 85, 255, 0.15)' }}>
-                    <label htmlFor="resend-api-key" style={{ fontWeight: 'bold', color: 'var(--primary)', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      🚀 {language === 'ar' ? 'مفتاح Resend API للإرسال المباشر للإيميل (مستوصى به للسيرفرات أونلاين)' : 'Resend API Key (Recommended for Cloud Servers)'}
-                    </label>
-                    <input
-                      id="resend-api-key"
-                      type="password"
-                      className="input-field"
-                      value={reportEmail.apiKey || ''}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="re_123456789..."
-                      style={{ marginTop: '0.5rem', fontSize: '0.95rem', padding: '0.6rem 0.8rem', border: '1px solid var(--primary)' }}
-                    />
-                    <span style={{ fontSize: '0.82rem', color: 'var(--text-main)', display: 'block', marginTop: '0.5rem', lineHeight: '1.5' }}>
-                      {language === 'ar' 
-                        ? '💡 للإرسال الفوري لبريدك بدون حظر المنافذ: احصل على مفتاح مجاني في 10 ثوانٍ من موقع resend.com وضعه هنا.' 
-                        : '💡 For direct email delivery without port blocks: Get a free key from resend.com in 10 seconds and paste it here.'}
-                    </span>
                   </div>
                 </div>
 
