@@ -3024,21 +3024,38 @@ export default function App() {
                 </div>
 
 
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
-                  <button className="btn btn-secondary" onClick={resetAllStatuses} disabled={isRunning}>
-                    {t('resetStatus')}
-                  </button>
-                  {!isRunning ? (
-                    <button className="btn btn-primary" onClick={runSuite}>
-                      <Play size={16} />
-                      {t('runAll')}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
+                    <button className="btn btn-secondary" onClick={resetAllStatuses} disabled={isRunning}>
+                      {t('resetStatus')}
                     </button>
-                  ) : (
-                    <button className="btn btn-primary" style={{ background: '#f43f5e', boxShadow: 'none' }} onClick={stopSuite}>
-                      <Square size={16} />
-                      {t('stopNow')}
+                    {!isRunning ? (
+                      <button className="btn btn-primary" onClick={runSuite}>
+                        <Play size={16} />
+                        {t('runAll')}
+                      </button>
+                    ) : (
+                      <button className="btn btn-primary" style={{ background: '#f43f5e', boxShadow: 'none' }} onClick={stopSuite}>
+                        <Square size={16} />
+                        {t('stopNow')}
+                      </button>
+                    )}
+                    <button 
+                      className="btn btn-success" 
+                      onClick={() => setIsReportOpen(true)}
+                      style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#10b981', color: '#ffffff', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}
+                    >
+                      <FileCheck size={18} />
+                      {language === 'ar' ? '📄 التقرير وتوليد رابط الإيميل' : '📄 Report & Share Link'}
                     </button>
-                  )}
+                    <button 
+                      className="btn btn-secondary" 
+                      onClick={handlePrint}
+                      title={language === 'ar' ? 'طباعة التقرير / تصدير PDF' : 'Print / Export PDF'}
+                      style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      <FileText size={16} />
+                      {language === 'ar' ? '🖨️ طباعة التقرير (PDF)' : '🖨️ Print / PDF'}
+                    </button>
                   <button
                     className="btn btn-secondary"
                     onClick={() => showCodeModal(language === 'ar' ? 'كود جميع الكاردات' : 'All cards code', getAllCode())}
