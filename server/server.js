@@ -37,6 +37,10 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', server: 'AetherTest AI Backend Running' });
+});
+
 // Create screenshots dir if not exists
 const SCREENSHOTS_DIR = path.join(process.cwd(), 'server', 'public', 'screenshots');
 if (!fs.existsSync(SCREENSHOTS_DIR)) {

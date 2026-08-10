@@ -4,6 +4,7 @@
   "description": "Smart Automated Testing System with Playwright & React",
   "main": "server/server.js",
   "scripts": {
+    "start": "node server/server.js",
     "install-all": "npm install && cd server && npm install",
     "server": "node server/server.js",
     "client": "vite",
