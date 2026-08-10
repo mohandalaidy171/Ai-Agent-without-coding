@@ -165,8 +165,8 @@ app.post('/send-report', async (req, res) => {
     let previewUrl;
 
     if (useCustomSmtp) {
-      let host = smtp.host.trim();
-      if (host.toLowerCase() === 'smtp.google.com' || host.toLowerCase() === 'gmail.com' || host.toLowerCase().includes('gmail')) {
+      let host = smtp.host.trim().replace(/@/g, '.');
+      if (host.toLowerCase() === 'smtp.google.com' || host.toLowerCase() === 'gmail.com' || host.toLowerCase().includes('gmail') || host.toLowerCase() === 'smtp@gmail.com') {
         host = 'smtp.gmail.com';
       } else if (host.toLowerCase() === 'outlook.com' || host.toLowerCase() === 'hotmail.com' || host.toLowerCase().includes('outlook')) {
         host = 'smtp-mail.outlook.com';

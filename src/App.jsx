@@ -2373,10 +2373,10 @@ export default function App() {
       return;
     }
 
-    let cleanHost = reportEmail.smtpHost.trim();
-    if (cleanHost.toLowerCase() === 'smtp.google.com' || cleanHost.toLowerCase() === 'gmail.com') {
+    let cleanHost = reportEmail.smtpHost.trim().replace(/@/g, '.');
+    if (cleanHost.toLowerCase() === 'smtp.google.com' || cleanHost.toLowerCase() === 'gmail.com' || cleanHost.toLowerCase().includes('gmail')) {
       cleanHost = 'smtp.gmail.com';
-    } else if (cleanHost.toLowerCase() === 'outlook.com' || cleanHost.toLowerCase() === 'hotmail.com') {
+    } else if (cleanHost.toLowerCase() === 'outlook.com' || cleanHost.toLowerCase() === 'hotmail.com' || cleanHost.toLowerCase().includes('outlook')) {
       cleanHost = 'smtp-mail.outlook.com';
     }
 
