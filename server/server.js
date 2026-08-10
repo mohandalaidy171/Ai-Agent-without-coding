@@ -18,7 +18,8 @@ const isAllowedOrigin = (origin) => {
     return (
       hostname === 'localhost' || 
       hostname === '127.0.0.1' || 
-      hostname.endsWith('.onrender.com') // 👈 هذا يسمح لجميع روابط Render بالاتصال
+      hostname.endsWith('.onrender.com') ||
+      hostname.endsWith('.vercel.app')
     );
   } catch {
     return false;

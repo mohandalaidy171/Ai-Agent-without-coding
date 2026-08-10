@@ -1158,9 +1158,10 @@ export default function App() {
 
   // Connect socket
   useEffect(() => {
-    // Connect directly to backend port 5000 to avoid proxy issues on Windows, or fallback to relative URL
+    // Connect directly to backend port 5000 on localhost, or fallback to deployed Render backend URL
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const socket = io(isLocalhost ? 'http://localhost:5000' : undefined, {
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-without-coding.onrender.com');
+    const socket = io(backendUrl, {
       transports: ['websocket', 'polling']
     });
     socketRef.current = socket;
