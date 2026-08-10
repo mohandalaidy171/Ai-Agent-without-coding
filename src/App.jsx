@@ -1070,6 +1070,7 @@ export default function App() {
   const [isRunning, setIsRunning] = useState(false);
   const [currentCardId, setCurrentCardId] = useState(null);
   const [liveFrame, setLiveFrame] = useState(null);
+  const [isStreamFullscreen, setIsStreamFullscreen] = useState(false);
   const [scheduledOrder, setScheduledOrder] = useState([]);
   const [scheduleType, setScheduleType] = useState('once'); // 'once' | 'daily' | 'weekly'
   const [scheduleDateTime, setScheduleDateTime] = useState('');
@@ -3865,18 +3866,43 @@ export default function App() {
                 <Eye size={16} />
                 {language === 'ar' ? 'البث الحي لمتصفح الاختبار (Live Stream)' : 'Live Chrome Browser Stream'}
               </span>
-              {liveFrame && (
-                <span className="badge passed" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#22c55e', color: '#fff', fontWeight: 'bold' }}>
-                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff', display: 'inline-block' }}></span> LIVE
-                </span>
-              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {liveFrame && (
+                  <span className="badge passed" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#22c55e', color: '#fff', fontWeight: 'bold' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff', display: 'inline-block' }}></span> LIVE
+                  </span>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem', borderRadius: '6px' }}
+                  onClick={() => setIsStreamFullscreen(true)}
+                  title={language === 'ar' ? 'عرض ملء الشاشة' : 'Fullscreen'}
+                >
+                  <Maximize2 size={13} />
+                  {language === 'ar' ? 'ملء الشاشة' : 'Fullscreen'}
+                </button>
+              </div>
             </div>
-            <div style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090d16', minHeight: '240px', position: 'relative' }}>
+            <div 
+              style={{ 
+                padding: '0.5rem', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                background: '#090d16', 
+                height: '280px', 
+                position: 'relative', 
+                overflow: 'hidden',
+                cursor: liveFrame ? 'pointer' : 'default'
+              }}
+              onClick={() => { if (liveFrame) setIsStreamFullscreen(true); }}
+              title={liveFrame ? (language === 'ar' ? 'اضغط للتكبير لملء الشاشة' : 'Click to expand to fullscreen') : ''}
+            >
               {liveFrame ? (
                 <img 
                   src={liveFrame} 
                   alt="Live Chrome Stream" 
-                  style={{ width: '100%', maxHeight: '360px', objectFit: 'contain', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} 
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} 
                 />
               ) : (
                 <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem 1rem' }}>
@@ -3890,6 +3916,62 @@ export default function App() {
               )}
             </div>
           </div>
+
+          {/* Fullscreen Overlay Stream Modal */}
+          {isStreamFullscreen && (
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 99999,
+                background: 'rgba(9, 13, 22, 0.96)',
+                backdropFilter: 'blur(12px)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1.5rem'
+              }}
+              onClick={() => setIsStreamFullscreen(false)}
+            >
+              <div 
+                style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', display: 'flex', gap: '1rem', alignItems: 'center', zIndex: 100000 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <span className="badge passed" style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem', background: '#22c55e', color: '#fff', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#fff' }}></span> LIVE STREAM
+                </span>
+                <button 
+                  className="btn btn-danger" 
+                  style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+                  onClick={() => setIsStreamFullscreen(false)}
+                >
+                  <X size={18} />
+                  {language === 'ar' ? 'إغلاق ملء الشاشة' : 'Close Fullscreen'}
+                </button>
+              </div>
+
+              <div style={{ maxWidth: '96vw', maxHeight: '88vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+                {liveFrame ? (
+                  <img 
+                    src={liveFrame} 
+                    alt="Fullscreen Live Chrome Stream" 
+                    style={{ maxWidth: '96vw', maxHeight: '88vh', objectFit: 'contain', borderRadius: '10px', boxShadow: '0 25px 70px rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.15)' }} 
+                  />
+                ) : (
+                  <div style={{ color: '#94a3b8', textAlign: 'center', padding: '3rem' }}>
+                    <Eye size={48} style={{ marginBottom: '1rem', opacity: 0.4, color: 'var(--primary)' }} />
+                    <p style={{ fontSize: '1.1rem', margin: 0 }}>
+                      {language === 'ar' ? 'شاشة البث الحي متوقفة حالياً. قم بتشغيل اختبار لبدء البث.' : 'Live stream is currently idle.'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="console-header">
             <span className="console-title">
