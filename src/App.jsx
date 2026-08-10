@@ -2671,8 +2671,8 @@ export default function App() {
               {theme === 'dark' ? 'Dark' : 'Light'}
             </span>
           </button>
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             onClick={() => setIsGuideOpen(true)}
             title={language === 'ar' ? 'دليل الاستخدام والتعليمات' : 'User Guide'}
             style={{ gap: '0.4rem', fontWeight: 700, background: 'rgba(99, 85, 255, 0.12)', color: 'var(--primary)', border: '1px solid var(--primary-glow)' }}
@@ -2844,168 +2844,66 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-
-                  {/* Resend API Key Input Field on Main Screen */}
-                  <div className="input-wrapper" style={{ gridColumn: '1 / -1', marginTop: '0.5rem', padding: '0.85rem', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.08)', border: '1.5px solid #22c55e' }}>
-                    <label htmlFor="resend-api-key-main" style={{ fontWeight: '800', color: '#16a34a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      🚀 {language === 'ar' ? 'مفتاح Resend API لإرسال الإيميلات الفوري (مستوصى به للسيرفرات أونلاين)' : 'Resend Email API Key (Recommended for Cloud)'}
-                    </label>
-                    <input
-                      id="resend-api-key-main"
-                      type="password"
-                      className="input-field"
-                      placeholder="ضع الكود هنا (يبدأ بـ re_...)"
-                      value={reportEmail.apiKey || ''}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
-                      style={{ marginTop: '0.35rem' }}
-                    />
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem' }}>
-                      {language === 'ar' ? '💡 احصل على مفتاح مجاني في 10 ثوانٍ من resend.com لإرسال التقارير مباشرة لإيميلك بدون حظر منافذ.' : '💡 Get a free key at resend.com to deliver emails directly without port blocks.'}
-                    </span>
-                  </div>
                 </div>
 
-                <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', color: 'var(--text-main)', marginBottom: '1rem' }}>{t('sendReportByEmail')} (اختياري / للإرسال التلقائي)</h3>
-                  <div className="credentials-grid">
-                    <div className="input-wrapper">
-                      <label htmlFor="inline-sender-email">{t('senderEmail')}</label>
-                      <input
-                        id="inline-sender-email"
-                        type="email"
-                        className="input-field"
-                        value={reportEmail.senderEmail}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, senderEmail: e.target.value }))}
-                        placeholder="sender@example.com"
-                      />
-                    </div>
-                    <div className="input-wrapper">
-                      <label htmlFor="inline-recipient-email">{t('recipientEmail')}</label>
-                      <input
-                        id="inline-recipient-email"
-                        type="email"
-                        className="input-field"
-                        value={reportEmail.recipientEmail}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, recipientEmail: e.target.value }))}
-                        placeholder="recipient@example.com"
-                      />
-                    </div>
-                    <div className="input-wrapper">
-                      <label htmlFor="inline-email-subject">{t('emailSubject')}</label>
-                      <input
-                        id="inline-email-subject"
-                        type="text"
-                        className="input-field"
-                        value={reportEmail.subject}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, subject: e.target.value }))}
-                      />
-                    </div>
-                    <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
-                      <label htmlFor="inline-email-body">{t('emailBody')}</label>
-                      <textarea
-                        id="inline-email-body"
-                        className="input-field"
-                        rows={2}
-                        value={reportEmail.body}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <details style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.03)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <summary style={{ cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                      ⚙️ {t('smtpSettingsSection')} ({t('smtpHost')}, {t('smtpPort')}, {t('smtpUser')})
-                    </summary>
-                    <div style={{ marginTop: '1rem', display: 'grid', gap: '0.75rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                      <div className="input-wrapper">
-                        <label htmlFor="inline-smtp-host">{t('smtpHost')}</label>
-                        <input
-                          id="inline-smtp-host"
-                          type="text"
-                          className="input-field"
-                          value={reportEmail.smtpHost}
-                          onChange={(e) => setReportEmail(prev => ({ ...prev, smtpHost: e.target.value }))}
-                          placeholder="smtp.gmail.com"
-                        />
+                {/* Clean Shareable Live Report Link Generator Section */}
+                <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ background: 'linear-gradient(135deg, rgba(99, 85, 255, 0.12), rgba(16, 185, 129, 0.12))', border: '2px solid var(--primary)', padding: '1.25rem', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      <div>
+                        <h3 style={{ margin: 0, color: 'var(--primary)', fontWeight: '800', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          🔗 {language === 'ar' ? 'توليد رابط التقرير التفاعلي المباشر (للمشاركة)' : 'Generate Shareable Web Report Link'}
+                        </h3>
+                        <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                          {language === 'ar' ? 'اضغط الزر لتوليد رابط مباشر لتقريرك لنسخه ولصقه في أي إيميل ليرى المستلم التقرير كاملاً!' : 'Click to generate a shareable live report link to copy and paste into any email!'}
+                        </p>
                       </div>
-                      <div className="input-wrapper">
-                        <label htmlFor="inline-smtp-port">{t('smtpPort')}</label>
-                        <input
-                          id="inline-smtp-port"
-                          type="text"
-                          className="input-field"
-                          value={reportEmail.smtpPort}
-                          onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPort: e.target.value }))}
-                          placeholder="587 / 465"
-                        />
-                      </div>
-                      <div className="input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.2rem' }}>
-                        <input
-                          id="inline-smtp-secure"
-                          type="checkbox"
-                          checked={reportEmail.smtpSecure}
-                          onChange={(e) => setReportEmail(prev => ({ ...prev, smtpSecure: e.target.checked }))}
-                        />
-                        <label htmlFor="inline-smtp-secure" style={{ fontSize: '0.85rem' }}>{t('smtpSecure')}</label>
-                      </div>
-                      <div className="input-wrapper">
-                        <label htmlFor="inline-smtp-user">{t('smtpUser')}</label>
-                        <input
-                          id="inline-smtp-user"
-                          type="text"
-                          className="input-field"
-                          value={reportEmail.smtpUser}
-                          onChange={(e) => setReportEmail(prev => ({ ...prev, smtpUser: e.target.value }))}
-                          placeholder="username@example.com"
-                        />
-                      </div>
-                      <div className="input-wrapper">
-                        <label htmlFor="inline-smtp-pass">{t('smtpPass')}</label>
-                        <input
-                          id="inline-smtp-pass"
-                          type="password"
-                          className="input-field"
-                          value={reportEmail.smtpPass}
-                          onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPass: e.target.value }))}
-                          placeholder="••••••••"
-                        />
-                      </div>
-                    </div>
-                    <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>{t('smtpHint')}</p>
-                  </details>
 
-                  <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      <input
-                        type="checkbox"
-                        checked={reportEmail.autoSend || false}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, autoSend: e.target.checked }))}
-                        style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                      />
-                      {t('autoSendReport')}
-                    </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center' }}>
-                      <button className="btn btn-secondary" onClick={handleSaveEmailSettings} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
-                        {t('saveEmailSettings')}
+                      <button 
+                        className="btn btn-primary" 
+                        onClick={handleGenerateShareableReportLink}
+                        disabled={isGeneratingLink}
+                        style={{ padding: '0.6rem 1.4rem', fontWeight: 'bold', fontSize: '0.95rem', borderRadius: '8px', background: 'var(--primary)', boxShadow: '0 4px 15px var(--primary-glow)' }}
+                      >
+                        {isGeneratingLink ? (language === 'ar' ? '⏳ جاري التوليد...' : '⏳ Generating...') : (language === 'ar' ? '✨ توليد رابط التقرير الآن' : '✨ Generate Report Link')}
                       </button>
-                      <button className="btn btn-success" onClick={handleSendReportEmail} disabled={emailSending} style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}>
-                        {emailSending ? t('sendingEmail') : t('sendEmailButton')}
-                      </button>
-                      {emailFeedback && (
-                        <div style={{ color: emailFeedback.type === 'success' ? 'var(--success)' : 'var(--danger)', fontWeight: 600, fontSize: '0.85rem' }}>
-                          {emailFeedback.message}
-                        </div>
-                      )}
-                      {emailPreviewUrl && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '100%' }}>
-                          <div style={{ color: 'var(--success)', fontSize: '0.85rem' }}>
-                            <a href={emailPreviewUrl} target="_blank" rel="noreferrer">{emailPreviewUrl}</a>
-                          </div>
-                          <div style={{ fontSize: '0.8rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '0.4rem 0.6rem', borderRadius: '6px', marginTop: '0.25rem' }}>
-                            {t('etherealNotice')}
-                          </div>
-                        </div>
-                      )}
                     </div>
+
+                    {generatedReportUrl && (
+                      <div style={{ marginTop: '1rem', background: 'var(--control-bg)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1.5px solid #22c55e', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#16a34a', width: '100%' }}>
+                          ✅ {language === 'ar' ? 'تم توليد رابط التقرير التفاعلي بنجاح! انسخه واستخدمه في إيميلك:' : 'Report link generated successfully! Copy and use in your email:'}
+                        </span>
+                        <input 
+                          type="text" 
+                          readOnly 
+                          value={generatedReportUrl} 
+                          style={{ flex: 1, minWidth: '240px', padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid #22c55e', background: 'var(--control-bg)', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 'bold' }} 
+                        />
+                        <button 
+                          className="btn btn-success" 
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', fontWeight: 'bold' }}
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard.writeText(generatedReportUrl);
+                              setCopiedLink(true);
+                              setTimeout(() => setCopiedLink(false), 2500);
+                            }
+                          }}
+                        >
+                          {copiedLink ? '✅ تم النسخ!' : '📋 نسخ الرابط'}
+                        </button>
+                        <a 
+                          href={generatedReportUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-secondary" 
+                          style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', textDecoration: 'none' }}
+                        >
+                          🔗 {language === 'ar' ? 'فتح التقرير' : 'Open Link'}
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -3024,38 +2922,21 @@ export default function App() {
                 </div>
 
 
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
-                    <button className="btn btn-secondary" onClick={resetAllStatuses} disabled={isRunning}>
-                      {t('resetStatus')}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', marginTop: '1rem' }}>
+                  <button className="btn btn-secondary" onClick={resetAllStatuses} disabled={isRunning}>
+                    {t('resetStatus')}
+                  </button>
+                  {!isRunning ? (
+                    <button className="btn btn-primary" onClick={runSuite}>
+                      <Play size={16} />
+                      {t('runAll')}
                     </button>
-                    {!isRunning ? (
-                      <button className="btn btn-primary" onClick={runSuite}>
-                        <Play size={16} />
-                        {t('runAll')}
-                      </button>
-                    ) : (
-                      <button className="btn btn-primary" style={{ background: '#f43f5e', boxShadow: 'none' }} onClick={stopSuite}>
-                        <Square size={16} />
-                        {t('stopNow')}
-                      </button>
-                    )}
-                    <button 
-                      className="btn btn-success" 
-                      onClick={() => setIsReportOpen(true)}
-                      style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#10b981', color: '#ffffff', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)' }}
-                    >
-                      <FileCheck size={18} />
-                      {language === 'ar' ? '📄 التقرير وتوليد رابط الإيميل' : '📄 Report & Share Link'}
+                  ) : (
+                    <button className="btn btn-primary" style={{ background: '#f43f5e', boxShadow: 'none' }} onClick={stopSuite}>
+                      <Square size={16} />
+                      {t('stopNow')}
                     </button>
-                    <button 
-                      className="btn btn-secondary" 
-                      onClick={handlePrint}
-                      title={language === 'ar' ? 'طباعة التقرير / تصدير PDF' : 'Print / Export PDF'}
-                      style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-                    >
-                      <FileText size={16} />
-                      {language === 'ar' ? '🖨️ طباعة التقرير (PDF)' : '🖨️ Print / PDF'}
-                    </button>
+                  )}
                   <button
                     className="btn btn-secondary"
                     onClick={() => showCodeModal(language === 'ar' ? 'كود جميع الكاردات' : 'All cards code', getAllCode())}
@@ -4503,8 +4384,8 @@ export default function App() {
                   <h3 style={{ margin: 0, color: 'var(--primary)', fontWeight: '800', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     🔗 {language === 'ar' ? 'توليد رابط التقرير التفاعلي المباشر (للمشاركة بالإيميل)' : 'Generate Shareable Live Web Report Link'}
                   </h3>
-                  <button 
-                    className="btn btn-primary" 
+                  <button
+                    className="btn btn-primary"
                     onClick={handleGenerateShareableReportLink}
                     disabled={isGeneratingLink}
                     style={{ padding: '0.5rem 1.25rem', fontWeight: 'bold', fontSize: '0.9rem', borderRadius: '8px', background: 'var(--primary)', boxShadow: '0 4px 15px var(--primary-glow)' }}
@@ -4514,21 +4395,21 @@ export default function App() {
                 </div>
 
                 <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                  {language === 'ar' 
-                    ? 'اضغط الزر أعلاه لتوليد رابط تفاعلي مباشر لتقريرك. يمكنك نسخ الرابط ولصقه في أي إيميل ليرى مستلم الإيميل التقرير كاملاً مع الفيديو والإحصائيات!' 
+                  {language === 'ar'
+                    ? 'اضغط الزر أعلاه لتوليد رابط تفاعلي مباشر لتقريرك. يمكنك نسخ الرابط ولصقه في أي إيميل ليرى مستلم الإيميل التقرير كاملاً مع الفيديو والإحصائيات!'
                     : 'Click the button above to generate a shareable live report URL. Copy and paste it into any email for anyone to view!'}
                 </p>
 
                 {generatedReportUrl && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--control-bg)', padding: '0.65rem 0.85rem', borderRadius: '10px', border: '1.5px solid #22c55e', flexWrap: 'wrap' }}>
-                    <input 
-                      type="text" 
-                      readOnly 
-                      value={generatedReportUrl} 
-                      style={{ flex: 1, minWidth: '220px', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--control-border)', background: 'transparent', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 'bold' }} 
+                    <input
+                      type="text"
+                      readOnly
+                      value={generatedReportUrl}
+                      style={{ flex: 1, minWidth: '220px', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--control-border)', background: 'transparent', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 'bold' }}
                     />
-                    <button 
-                      className="btn btn-success" 
+                    <button
+                      className="btn btn-success"
                       style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '6px', fontWeight: 'bold' }}
                       onClick={() => {
                         if (navigator.clipboard) {
@@ -4540,11 +4421,11 @@ export default function App() {
                     >
                       {copiedLink ? '✅ تم النسخ!' : '📋 نسخ الرابط'}
                     </button>
-                    <a 
-                      href={generatedReportUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="btn btn-secondary" 
+                    <a
+                      href={generatedReportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-secondary"
                       style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '6px', textDecoration: 'none' }}
                     >
                       🔗 {language === 'ar' ? 'فتح التقرير' : 'Open Link'}
@@ -4594,167 +4475,7 @@ export default function App() {
                 </div>
               </div>
 
-              <section className="email-report-panel" style={{ margin: '1.5rem 0', padding: '1.25rem', border: '2px solid var(--primary)', borderRadius: '14px', background: 'var(--soft-panel-bg)' }}>
-                <h3 style={{ marginBottom: '1rem', color: 'var(--primary)', fontWeight: '800' }}>{t('sendReportByEmail')}</h3>
-
-                {/* Highly Visible Resend API Key Field at top of email section */}
-                <div style={{ background: 'rgba(34, 197, 94, 0.1)', border: '2px solid #22c55e', padding: '1rem', borderRadius: '12px', marginBottom: '1.25rem' }}>
-                  <label htmlFor="resend-api-key" style={{ fontWeight: '800', color: '#16a34a', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.4rem' }}>
-                    🚀 {language === 'ar' ? 'مفتاح Resend API للإرسال الفوري للبريد (مستوصى به لـ Render/Vercel)' : 'Resend API Key (Recommended for Cloud Servers)'}
-                  </label>
-                  <input
-                    id="resend-api-key"
-                    type="password"
-                    className="input-field"
-                    value={reportEmail.apiKey || ''}
-                    onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
-                    placeholder="ضع الكود هنا (يبدأ بـ re_...)"
-                    style={{ width: '100%', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1.5px solid #22c55e', background: 'var(--control-bg)', color: 'var(--text-main)', fontWeight: 'bold' }}
-                  />
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.4rem', lineHeight: '1.4' }}>
-                    {language === 'ar' 
-                      ? '💡 نصيحة: احصل على مفتاح مجاني في 10 ثوانٍ من موقع resend.com وضعه هنا لضمان الإرسال المباشر للإيميل الحقيقي دون حظر المنافذ.' 
-                      : '💡 Tip: Get a free key from resend.com in 10 seconds for direct email inbox delivery.'}
-                  </span>
-                </div>
-
-                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-                  <div className="input-wrapper">
-                    <label htmlFor="sender-email-input">{t('senderEmail')}</label>
-                    <input
-                      id="sender-email-input"
-                      type="email"
-                      className="input-field"
-                      value={reportEmail.senderEmail}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, senderEmail: e.target.value }))}
-                      placeholder="sender@example.com"
-                    />
-                  </div>
-                  <div className="input-wrapper">
-                    <label htmlFor="recipient-email-input">{t('recipientEmail')}</label>
-                    <input
-                      id="recipient-email-input"
-                      type="email"
-                      className="input-field"
-                      value={reportEmail.recipientEmail}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, recipientEmail: e.target.value }))}
-                      placeholder="recipient@example.com"
-                    />
-                  </div>
-                  <div className="input-wrapper">
-                    <label htmlFor="email-subject-input">{t('emailSubject')}</label>
-                    <input
-                      id="email-subject-input"
-                      type="text"
-                      className="input-field"
-                      value={reportEmail.subject}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, subject: e.target.value }))}
-                    />
-                  </div>
-                  <div className="input-wrapper" style={{ gridColumn: '1 / -1' }}>
-                    <label htmlFor="email-body-input">{t('emailBody')}</label>
-                    <textarea
-                      id="email-body-input"
-                      className="input-field"
-                      rows={4}
-                      value={reportEmail.body}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, body: e.target.value }))}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
-                  <h4 style={{ marginBottom: '0.75rem' }}>{t('smtpSettingsSection')}</h4>
-                  <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-                    <div className="input-wrapper">
-                      <label htmlFor="smtp-host-input">{t('smtpHost')}</label>
-                      <input
-                        id="smtp-host-input"
-                        type="text"
-                        className="input-field"
-                        value={reportEmail.smtpHost}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpHost: e.target.value }))}
-                        placeholder="smtp.example.com"
-                      />
-                    </div>
-                    <div className="input-wrapper">
-                      <label htmlFor="smtp-port-input">{t('smtpPort')}</label>
-                      <input
-                        id="smtp-port-input"
-                        type="text"
-                        className="input-field"
-                        value={reportEmail.smtpPort}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPort: e.target.value }))}
-                      />
-                    </div>
-                    <div className="input-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-                      <input
-                        id="smtp-secure-input"
-                        type="checkbox"
-                        checked={reportEmail.smtpSecure}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpSecure: e.target.checked }))}
-                      />
-                      <label htmlFor="smtp-secure-input">{t('smtpSecure')} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>({t('smtpSecureHelp')})</span></label>
-                    </div>
-                    <div className="input-wrapper">
-                      <label htmlFor="smtp-user-input">{t('smtpUser')}</label>
-                      <input
-                        id="smtp-user-input"
-                        type="text"
-                        className="input-field"
-                        value={reportEmail.smtpUser}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpUser: e.target.value }))}
-                      />
-                    </div>
-                    <div className="input-wrapper">
-                      <label htmlFor="smtp-pass-input">{t('smtpPass')}</label>
-                      <input
-                        id="smtp-pass-input"
-                        type="password"
-                        className="input-field"
-                        value={reportEmail.smtpPass}
-                        onChange={(e) => setReportEmail(prev => ({ ...prev, smtpPass: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                  <p style={{ marginTop: '0.75rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('smtpHint')}</p>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    <input
-                      type="checkbox"
-                      checked={reportEmail.autoSend || false}
-                      onChange={(e) => setReportEmail(prev => ({ ...prev, autoSend: e.target.checked }))}
-                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                    />
-                    {t('autoSendReport')}
-                  </label>
-                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <button className="btn btn-secondary" onClick={handleSaveEmailSettings}>
-                      {t('saveEmailSettings')}
-                    </button>
-                    <button className="btn btn-success" onClick={handleSendReportEmail} disabled={emailSending}>
-                      {emailSending ? t('sendingEmail') : t('sendEmailButton')}
-                    </button>
-                  </div>
-                  {emailFeedback && (
-                    <div style={{ color: emailFeedback.type === 'success' ? 'var(--success)' : 'var(--danger)', fontWeight: 600 }}>
-                      {emailFeedback.message}
-                    </div>
-                  )}
-                  {emailPreviewUrl && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', width: '100%' }}>
-                      <div style={{ color: 'var(--success)' }}>
-                        <a href={emailPreviewUrl} target="_blank" rel="noreferrer">{emailPreviewUrl}</a>
-                      </div>
-                      <div style={{ fontSize: '0.85rem', color: '#eab308', background: 'rgba(234, 179, 8, 0.1)', padding: '0.5rem 0.75rem', borderRadius: '8px', marginTop: '0.25rem' }}>
-                        {t('etherealNotice')}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </section>
+              {/* Detailed Test Results */}
 
               {/* Detailed Test Results */}
               <div className="report-details-section">
@@ -4902,8 +4623,8 @@ export default function App() {
 
       {/* User Guide Modal */}
       {isGuideOpen && (
-        <div 
-          className="modal-backdrop" 
+        <div
+          className="modal-backdrop"
           onClick={() => setIsGuideOpen(false)}
           style={{
             position: 'fixed',
@@ -4917,8 +4638,8 @@ export default function App() {
             padding: '1rem'
           }}
         >
-          <div 
-            className="modal-content" 
+          <div
+            className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{
               maxWidth: '850px',
@@ -4948,8 +4669,8 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <button 
-                className="btn btn-icon-only btn-danger-outline" 
+              <button
+                className="btn btn-icon-only btn-danger-outline"
                 onClick={() => setIsGuideOpen(false)}
                 style={{ padding: '0.4rem', borderRadius: '8px' }}
               >
@@ -4959,7 +4680,7 @@ export default function App() {
 
             {/* Guide Body Steps */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              
+
               {/* Step 1 */}
               <div style={{ background: 'var(--soft-panel-bg)', padding: '1rem 1.25rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
                 <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--primary)', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -4967,7 +4688,7 @@ export default function App() {
                   {language === 'ar' ? 'إدخال بيانات ورابط الموقع المستهدف' : 'Target Website Credentials'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-                  {language === 'ar' 
+                  {language === 'ar'
                     ? 'في لوحة "البيانات والمحددات العامة": أدخل رابط الموقع (URL) المراد اختباره (مثل https://example.com/login). إذا كان الموقع يتطلب تسجيل دخول، أدخل اسم المستخدم وكلمة المرور وفعّل ميزة الدخول التلقائي (Auto-Login).'
                     : 'In the Target Credentials panel: Enter the website URL (e.g. https://example.com/login). If the site requires login, enter username/password and enable Auto-Login.'}
                 </p>
@@ -4980,7 +4701,7 @@ export default function App() {
                   {language === 'ar' ? 'إنشاء كروت الاختبار وتحديد الخطوات' : 'Creating Test Cards & Steps'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-                  {language === 'ar' 
+                  {language === 'ar'
                     ? 'اضغط على "إضافة كارت اختبار جديد" أو اختر أحد القوالب الجاهزة. يمكنك كتابة الخطوات باللغة الطبيعية (عربي/إنجليزي) مثل:\n• انقر على زر الدخول\n• اكتب "محمد" في حقل اسم المستخدم\n• تأكد من وجود "مرحباً بك"'
                     : 'Click "Add Custom Test Card" or pick a Quick Preset. Write test steps in plain text or structured steps:\n• click login button\n• type "John" into username field\n• verify text "Welcome"'}
                 </p>
@@ -4993,7 +4714,7 @@ export default function App() {
                   {language === 'ar' ? 'التشغيل والبث الحي للمتصفح' : 'Execution & Live Streaming'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-                  {language === 'ar' 
+                  {language === 'ar'
                     ? 'اضغط على "تشغيل جميع الاختبارات" أو زر التشغيل المنفرد للكارت. يمكنك متابعة تحركات المتصفح حية عبر مربع "البث الحي (Live Stream)" وضغط زر "ملء الشاشة" لتكبير العرض ملء الشاشة!'
                     : 'Click "Run All Tests" or individual card run button. Watch browser actions live inside the "Live Stream" box and click "Fullscreen" to expand to full screen!'}
                 </p>
@@ -5006,7 +4727,7 @@ export default function App() {
                   {language === 'ar' ? 'التقارير الفنية وإرسال البريد' : 'Smart Reports & Email Delivery'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-                  {language === 'ar' 
+                  {language === 'ar'
                     ? 'عند اكتمال الاختبارات، يظهر لك التقرير الفني الشامل مع إحصائيات ولقطات شاشة. يمكنك تصدير التقرير PDF/HTML أو إرساله تلقائياً للبريد الإلكتروني.'
                     : 'Upon completion, a comprehensive smart report is generated with stats & screenshots. You can export PDF/HTML or auto-send via email.'}
                 </p>
@@ -5019,7 +4740,7 @@ export default function App() {
                   {language === 'ar' ? 'فحص الثغرات والأخطاء (Bug Finder MCP)' : 'Automated Bug Scan'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
-                  {language === 'ar' 
+                  {language === 'ar'
                     ? 'انتقل لتبويب "Bug Finder MCP" لفحص موقعك تلقائياً واكتشاف أخطاء JavaScript والروابط المعطلة والاستجابات البطيئة مع شروحات وتوصيات الحل لكل مشكلة.'
                     : 'Switch to "Bug Finder MCP" tab to scan your site for JS console errors, broken links, and HTTP failures with automatic fix recommendations.'}
                 </p>
@@ -5029,8 +4750,8 @@ export default function App() {
 
             {/* Modal Footer */}
             <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
-              <button 
-                className="btn btn-primary" 
+              <button
+                className="btn btn-primary"
                 onClick={() => setIsGuideOpen(false)}
                 style={{ padding: '0.5rem 1.5rem', fontWeight: 'bold', borderRadius: '8px' }}
               >
