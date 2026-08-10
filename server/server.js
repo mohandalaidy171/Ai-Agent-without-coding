@@ -159,10 +159,60 @@ async function getOrCreateEtherealAccount() {
 }
 
 app.post('/send-report', async (req, res) => {
-  const { senderEmail, recipientEmail, subject, text, reportHtml, smtp } = req.body;
+  const { senderEmail, recipientEmail, subject, text, reportHtml, smtp, apiKey } = req.body;
 
   if (!senderEmail || !recipientEmail || !subject || !reportHtml) {
     return res.status(400).json({ error: 'Missing required email fields.' });
+  }
+
+  // Save HTML report file statically for instant HTTP live preview
+  const reportFileName = `report-${Date.now()}-${Math.random().toString(16).slice(2)}.html`;
+  const reportFilePath = path.join(REPORTS_DIR, reportFileName);
+  try {
+    fs.writeFileSync(reportFilePath, reportHtml, 'utf8');
+  } catch (e) {}
+
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  const hostHeader = req.headers['x-forwarded-host'] || req.get('host');
+  const reportHttpUrl = `${protocol}://${hostHeader}/reports/${reportFileName}`;
+
+  // Try HTTPS REST API sending first (Port 443 - Never blocked by Render or cloud firewalls)
+  const activeApiKey = (apiKey || smtp?.apiKey || process.env.RESEND_API_KEY || '').trim();
+  if (activeApiKey) {
+    console.log('Sending email via Resend HTTPS REST API (Port 443)...');
+    try {
+      const apiResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${activeApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'AetherTest AI <onboarding@resend.dev>',
+          to: [recipientEmail.trim()],
+          subject: subject.trim(),
+          html: `<div><p>${String(text || 'Please find the attached test report.').replace(/\n/g, '<br/>')}</p><p><a href="${reportHttpUrl}" target="_blank">Open Full Interactive Web Report</a></p></div>`,
+          attachments: [
+            {
+              filename: 'aethertest-report.html',
+              content: Buffer.from(reportHtml, 'utf8').toString('base64')
+            }
+          ]
+        })
+      });
+      const apiData = await apiResponse.json();
+      if (apiResponse.ok) {
+        return res.json({
+          success: true,
+          previewUrl: reportHttpUrl,
+          message: `✅ تم إرسال التقرير بنجاح إلى البريد الإلكتروني (${recipientEmail})!`
+        });
+      } else {
+        console.warn('Resend HTTPS API returned error:', apiData);
+      }
+    } catch (apiErr) {
+      console.error('HTTPS Email API exception:', apiErr.message);
+    }
   }
 
   try {

@@ -2390,6 +2390,7 @@ export default function App() {
       subject: reportEmail.subject.trim(),
       text: reportEmail.body,
       reportHtml,
+      apiKey: (reportEmail.apiKey || '').trim(),
       smtp: {
         host: cleanHost,
         port: portNum,
@@ -4522,6 +4523,27 @@ export default function App() {
 
                 <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', background: 'rgba(255,255,255,0.04)' }}>
                   <h4 style={{ marginBottom: '0.75rem' }}>{t('smtpSettingsSection')}</h4>
+
+                  {/* HTTPS Direct Email API Key Option for Cloud Hosts */}
+                  <div className="input-wrapper" style={{ marginBottom: '1.25rem', background: 'rgba(99, 85, 255, 0.08)', padding: '0.85rem', borderRadius: '10px', border: '1px solid var(--primary-glow)' }}>
+                    <label htmlFor="resend-api-key" style={{ fontWeight: 'bold', color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      🚀 {language === 'ar' ? 'مفتاح Resend API لإرسال الإيميلات الفوري عبر HTTPS (مستوصى به للسيرفرات السحابية)' : 'Resend API Key (HTTPS Direct Email API for Cloud Servers)'}
+                    </label>
+                    <input
+                      id="resend-api-key"
+                      type="password"
+                      className="input-field"
+                      value={reportEmail.apiKey || ''}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
+                      placeholder="re_123456789..."
+                      style={{ marginTop: '0.35rem' }}
+                    />
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem', lineHeight: '1.4' }}>
+                      {language === 'ar' 
+                        ? '💡 نصيحة: إذا كنت تستخدم سيرفر أونلاين مثل Render، احصل على مفتاح مجاني في 10 ثوانٍ من resend.com لضمان الإرسال المباشر للإيميل الحقيقي دون حظر المنافذ.' 
+                        : '💡 Tip: On cloud servers like Render, get a free key from resend.com in 10 seconds for direct inbox delivery.'}
+                    </span>
+                  </div>
                   <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
                     <div className="input-wrapper">
                       <label htmlFor="smtp-host-input">{t('smtpHost')}</label>
