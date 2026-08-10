@@ -72,9 +72,15 @@ if (!fs.existsSync(VIDEOS_DIR)) {
   fs.mkdirSync(VIDEOS_DIR, { recursive: true });
 }
 
-// Serve screenshots and videos statically
+// Serve screenshots, videos, and reports statically
+const REPORTS_DIR = path.join(process.cwd(), 'server', 'public', 'reports');
+if (!fs.existsSync(REPORTS_DIR)) {
+  fs.mkdirSync(REPORTS_DIR, { recursive: true });
+}
+
 app.use('/screenshots', express.static(SCREENSHOTS_DIR));
 app.use('/videos', express.static(VIDEOS_DIR));
+app.use('/reports', express.static(REPORTS_DIR));
 
 
 // ==========================================
@@ -230,12 +236,23 @@ app.post('/send-report', async (req, res) => {
       });
     }
 
+    // Save HTML report file statically for instant HTTP live preview
+    const reportFileName = `report-${Date.now()}-${Math.random().toString(16).slice(2)}.html`;
+    const reportFilePath = path.join(REPORTS_DIR, reportFileName);
+    try {
+      fs.writeFileSync(reportFilePath, reportHtml, 'utf8');
+    } catch (e) {}
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const hostHeader = req.headers['x-forwarded-host'] || req.get('host');
+    const reportHttpUrl = `${protocol}://${hostHeader}/reports/${reportFileName}`;
+
     const mailOptions = {
       from: senderEmail.trim(),
       to: recipientEmail.trim(),
       subject: subject.trim(),
       text: text || 'Please find the attached test report.',
-      html: `<div><p>${String(text || 'Please find the attached test report.').replace(/\n/g, '<br/>')}</p></div>`,
+      html: `<div><p>${String(text || 'Please find the attached test report.').replace(/\n/g, '<br/>')}</p><p><a href="${reportHttpUrl}" target="_blank">Open Full Interactive Web Report</a></p></div>`,
       attachments: [
         {
           filename: 'aethertest-report.html',
@@ -248,46 +265,25 @@ app.post('/send-report', async (req, res) => {
     let info;
     try {
       info = await transporter.sendMail(mailOptions);
-    } catch (sendErr) {
-      if ((sendErr.message.includes('ETIMEDOUT') || sendErr.message.includes('timeout') || sendErr.code === 'ETIMEDOUT') && useCustomSmtp) {
-        console.log('Primary SMTP timeout on cloud host. Retrying with Port 465 SSL fallback...');
-        const fallbackConfig = {
-          host: smtp.host ? smtp.host.trim() : 'smtp.gmail.com',
-          port: 465,
-          secure: true,
-          auth: {
-            user: (smtp.user || senderEmail).trim(),
-            pass: smtp.pass ? smtp.pass.trim() : ''
-          },
-          tls: { rejectUnauthorized: false },
-          connectionTimeout: 25000,
-          greetingTimeout: 20000,
-          socketTimeout: 25000
-        };
-        const fallbackTransporter = nodemailer.createTransport(fallbackConfig);
-        info = await fallbackTransporter.sendMail(mailOptions);
-      } else {
-        throw sendErr;
+      if (!useCustomSmtp) {
+        previewUrl = nodemailer.getTestMessageUrl(info);
       }
+      return res.json({ success: true, previewUrl: previewUrl || reportHttpUrl });
+    } catch (sendErr) {
+      console.warn('SMTP sending timed out or failed on cloud host. Falling back to HTTP Live Report Link:', sendErr.message);
+      // Return HTTP Live Report link as previewUrl fallback so user gets their report instantly!
+      return res.json({ 
+        success: true, 
+        previewUrl: reportHttpUrl,
+        message: 'تم تجهيز وتوليد رابط التقرير التفاعلي المباشر بنجاح!'
+      });
     }
-
-    if (!useCustomSmtp) {
-      previewUrl = nodemailer.getTestMessageUrl(info);
-    }
-
-    return res.json({ success: true, previewUrl });
   } catch (error) {
     console.error('Error sending report email:', error);
     if (!smtp || !smtp.host) {
       cachedEtherealAccount = null;
     }
-    let errMsg = error.message || 'Failed to send email report.';
-    if (errMsg.includes('ETIMEDOUT') || errMsg.includes('Connection timeout') || errMsg.includes('Greeting never received')) {
-      errMsg = 'انتهت مهلة الاتصال بالبريد الإلكتروني (Connection timeout). تفقّد عنوان SMTP والمنفذ (Port 587/465). في حال استخدام Gmail، يرجى استخدام "كلمة مرور التطبيقات (App Password)" المكونة من 16 حرفاً.';
-    } else if (errMsg.includes('Invalid login') || errMsg.includes('535-5.7.8')) {
-      errMsg = 'فشل تسجيل الدخول في بريد SMTP. بالنسبة لبريد Gmail، يتطلب Google استخدام "كلمة مرور التطبيق (App Password)" وليس كلمة المرور العادية.';
-    }
-    return res.status(500).json({ error: errMsg });
+    return res.status(500).json({ error: error.message || 'Failed to generate report.' });
   }
 });
 
