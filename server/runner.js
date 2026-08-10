@@ -796,18 +796,20 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
 
       page = await context.newPage();
 
-      // إرسال بث فوري مباشر لشاشة المتصفح إلى الواجهة (Live Screencast Stream)
-      let cdpClient;
-      try {
-        cdpClient = await context.newCDPSession(page);
-        await cdpClient.send('Page.startScreencast', { format: 'jpeg', quality: 65, maxWidth: 1280, maxHeight: 720 });
-        cdpClient.on('Page.screencastFrame', async ({ data, sessionId }) => {
-          try { await cdpClient.send('Page.screencastFrameAck', { sessionId }); } catch (e) {}
-          onEvent('screencast-frame', { cardId: card.id, frameData: data });
-        });
-      } catch (cdpErr) {
-        // CDPSession not supported or warning
-      }
+      // إرسال بث فوري مباشر لشاشة المتصفح إلى الواجهة (Live Stream)
+      let isStreaming = true;
+      (async () => {
+        while (isStreaming) {
+          try {
+            if (!page || page.isClosed()) break;
+            const buffer = await page.screenshot({ type: 'jpeg', quality: 55, timeout: 1500 });
+            if (buffer) {
+              onEvent('screencast-frame', { cardId: card.id, frameData: buffer.toString('base64') });
+            }
+          } catch (e) {}
+          await new Promise(r => setTimeout(r, 250));
+        }
+      })();
 
       // نرسل حدث محاولة جديدة للواجهة (اختياري للتتبع)
       onEvent('test-retry-start', { cardId: card.id, attempt });
@@ -1015,10 +1017,11 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
         onEvent('global-error', { error: err.message });
         cardFailed = true;
       } finally {
+        isStreaming = false;
         // إغلاق المتصفح المنفصل فوراً بعد إنهاء المحاولة وقبل المحاولة التالية/الكارد التالي
         if (browser) {
           try {
-            if (page) await page.waitForTimeout(2000); // مهلة رؤية سريعة قبل الإغلاق التلقائي
+            if (page) await page.waitForTimeout(1500); // مهلة رؤية سريعة قبل الإغلاق التلقائي
             await browser.close();
           } catch (e) { }
         }

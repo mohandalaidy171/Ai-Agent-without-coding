@@ -509,14 +509,19 @@ export async function runBugScan(input, onEvent) {
     const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const page = await context.newPage();
 
-    try {
-      const cdpClient = await context.newCDPSession(page);
-      await cdpClient.send('Page.startScreencast', { format: 'jpeg', quality: 65, maxWidth: 1280, maxHeight: 720 });
-      cdpClient.on('Page.screencastFrame', async ({ data, sessionId }) => {
-        try { await cdpClient.send('Page.screencastFrameAck', { sessionId }); } catch (e) {}
-        onEvent('screencast-frame', { cardId: 'bug-finder', frameData: data });
-      });
-    } catch (e) {}
+    let isStreaming = true;
+    (async () => {
+      while (isStreaming) {
+        try {
+          if (!page || page.isClosed()) break;
+          const buffer = await page.screenshot({ type: 'jpeg', quality: 55, timeout: 1500 });
+          if (buffer) {
+            onEvent('screencast-frame', { cardId: 'bug-finder', frameData: buffer.toString('base64') });
+          }
+        } catch (e) {}
+        await new Promise(r => setTimeout(r, 250));
+      }
+    })();
 
     page.on('console', message => {
       if (message.type() === 'error') {
