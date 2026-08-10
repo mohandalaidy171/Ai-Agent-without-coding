@@ -1072,6 +1072,9 @@ export default function App() {
   const [liveFrame, setLiveFrame] = useState(null);
   const [isStreamFullscreen, setIsStreamFullscreen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [generatedReportUrl, setGeneratedReportUrl] = useState('');
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [scheduledOrder, setScheduledOrder] = useState([]);
   const [scheduleType, setScheduleType] = useState('once'); // 'once' | 'daily' | 'weekly'
   const [scheduleDateTime, setScheduleDateTime] = useState('');
@@ -2356,6 +2359,31 @@ export default function App() {
   const getBackendBaseUrl = () => {
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     return import.meta.env.VITE_BACKEND_URL || (isLocalhost ? 'http://localhost:5000' : 'https://ai-agent-server-03cl.onrender.com');
+  };
+
+  const handleGenerateShareableReportLink = async () => {
+    setIsGeneratingLink(true);
+    setCopiedLink(false);
+    try {
+      const reportHtml = buildReportHtml();
+      const backendUrl = getBackendBaseUrl() || 'http://localhost:5000';
+      const response = await fetch(`${backendUrl}/generate-report-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reportHtml })
+      });
+      const result = await response.json();
+      if (response.ok && result.reportUrl) {
+        setGeneratedReportUrl(result.reportUrl);
+        addLog('✅ تم توليد رابط التقرير التفاعلي المباشر للمشاركة بنجاح.', 'success');
+      } else {
+        addLog('🚨 فشل توليد رابط التقرير.', 'error');
+      }
+    } catch (err) {
+      addLog(`🚨 خطأ في توليد رابط التقرير: ${err.message}`, 'error');
+    } finally {
+      setIsGeneratingLink(false);
+    }
   };
 
   const handleSendReportEmail = async () => {
@@ -4452,6 +4480,62 @@ export default function App() {
             </div>
 
             <div className="modal-body">
+              {/* Shareable Live Report Link Generator Panel */}
+              <div style={{ background: 'linear-gradient(135deg, rgba(99, 85, 255, 0.12), rgba(16, 185, 129, 0.12))', border: '2px solid var(--primary)', padding: '1.25rem', borderRadius: '14px', marginBottom: '1.25rem', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <h3 style={{ margin: 0, color: 'var(--primary)', fontWeight: '800', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    🔗 {language === 'ar' ? 'توليد رابط التقرير التفاعلي المباشر (للمشاركة بالإيميل)' : 'Generate Shareable Live Web Report Link'}
+                  </h3>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handleGenerateShareableReportLink}
+                    disabled={isGeneratingLink}
+                    style={{ padding: '0.5rem 1.25rem', fontWeight: 'bold', fontSize: '0.9rem', borderRadius: '8px', background: 'var(--primary)', boxShadow: '0 4px 15px var(--primary-glow)' }}
+                  >
+                    {isGeneratingLink ? (language === 'ar' ? '⏳ جاري التوليد...' : '⏳ Generating...') : (language === 'ar' ? '✨ توليد رابط التقرير الآن' : '✨ Generate Report Link')}
+                  </button>
+                </div>
+
+                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                  {language === 'ar' 
+                    ? 'اضغط الزر أعلاه لتوليد رابط تفاعلي مباشر لتقريرك. يمكنك نسخ الرابط ولصقه في أي إيميل ليرى مستلم الإيميل التقرير كاملاً مع الفيديو والإحصائيات!' 
+                    : 'Click the button above to generate a shareable live report URL. Copy and paste it into any email for anyone to view!'}
+                </p>
+
+                {generatedReportUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--control-bg)', padding: '0.65rem 0.85rem', borderRadius: '10px', border: '1.5px solid #22c55e', flexWrap: 'wrap' }}>
+                    <input 
+                      type="text" 
+                      readOnly 
+                      value={generatedReportUrl} 
+                      style={{ flex: 1, minWidth: '220px', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--control-border)', background: 'transparent', color: 'var(--text-main)', fontSize: '0.9rem', fontWeight: 'bold' }} 
+                    />
+                    <button 
+                      className="btn btn-success" 
+                      style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '6px', fontWeight: 'bold' }}
+                      onClick={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard.writeText(generatedReportUrl);
+                          setCopiedLink(true);
+                          setTimeout(() => setCopiedLink(false), 2500);
+                        }
+                      }}
+                    >
+                      {copiedLink ? '✅ تم النسخ!' : '📋 نسخ الرابط'}
+                    </button>
+                    <a 
+                      href={generatedReportUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-secondary" 
+                      style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderRadius: '6px', textDecoration: 'none' }}
+                    >
+                      🔗 {language === 'ar' ? 'فتح التقرير' : 'Open Link'}
+                    </a>
+                  </div>
+                )}
+              </div>
+
               {/* Target Website & Credentials Details Panel */}
               <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1rem' }}>
                 <h3 style={{ fontSize: '1rem', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem', fontWeight: '700' }}>

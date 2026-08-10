@@ -82,6 +82,28 @@ app.use('/screenshots', express.static(SCREENSHOTS_DIR));
 app.use('/videos', express.static(VIDEOS_DIR));
 app.use('/reports', express.static(REPORTS_DIR));
 
+// Endpoint to generate a shareable static HTML report link for email sharing
+app.post('/generate-report-link', (req, res) => {
+  try {
+    const { reportHtml } = req.body;
+    if (!reportHtml) {
+      return res.status(400).json({ error: 'Missing reportHtml content' });
+    }
+    const reportFileName = `report-${Date.now()}-${Math.random().toString(16).slice(2)}.html`;
+    const reportFilePath = path.join(REPORTS_DIR, reportFileName);
+    fs.writeFileSync(reportFilePath, reportHtml, 'utf8');
+
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    const hostHeader = req.headers['x-forwarded-host'] || req.get('host');
+    const reportUrl = `${protocol}://${hostHeader}/reports/${reportFileName}`;
+
+    return res.json({ success: true, reportUrl, fileName: reportFileName });
+  } catch (error) {
+    console.error('Error generating report link:', error);
+    return res.status(500).json({ error: 'Failed to generate report link' });
+  }
+});
+
 
 // ==========================================
 // Configure WebSockets (Socket.io)
