@@ -231,17 +231,17 @@ app.post('/send-report', async (req, res) => {
       const portNum = parseInt(smtp.port, 10) || 587;
       const secure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
 
-      let transportConfig;
       if (host === 'smtp.gmail.com') {
         const portNum = parseInt(smtp.port, 10) || 465;
         const useSecure = portNum === 465 ? true : (portNum === 587 ? false : Boolean(smtp.secure));
+        const cleanPass = (smtp.pass || '').trim().replace(/\s+/g, '');
         transportConfig = {
           host: 'smtp.gmail.com',
           port: portNum,
           secure: useSecure,
           auth: {
             user: (smtp.user || senderEmail).trim(),
-            pass: smtp.pass ? smtp.pass.trim() : ''
+            pass: cleanPass
           },
           tls: { rejectUnauthorized: false },
           connectionTimeout: 25000,
@@ -249,12 +249,13 @@ app.post('/send-report', async (req, res) => {
           socketTimeout: 25000
         };
       } else {
+        const cleanPass = (smtp.pass || '').trim();
         transportConfig = {
           host,
           port: portNum,
           secure,
-          connectionTimeout: 20000,
-          greetingTimeout: 15000,
+          connectionTimeout: 25000,
+          greetingTimeout: 20000,
           socketTimeout: 20000,
           tls: {
             rejectUnauthorized: false
@@ -264,7 +265,7 @@ app.post('/send-report', async (req, res) => {
         if (smtp.user && String(smtp.user).trim()) {
           transportConfig.auth = {
             user: smtp.user.trim(),
-            pass: smtp.pass || ''
+            pass: cleanPass
           };
         }
       }
@@ -285,17 +286,6 @@ app.post('/send-report', async (req, res) => {
         }
       });
     }
-
-    // Save HTML report file statically for instant HTTP live preview
-    const reportFileName = `report-${Date.now()}-${Math.random().toString(16).slice(2)}.html`;
-    const reportFilePath = path.join(REPORTS_DIR, reportFileName);
-    try {
-      fs.writeFileSync(reportFilePath, reportHtml, 'utf8');
-    } catch (e) {}
-
-    const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-    const hostHeader = req.headers['x-forwarded-host'] || req.get('host');
-    const reportHttpUrl = `${protocol}://${hostHeader}/reports/${reportFileName}`;
 
     const mailOptions = {
       from: senderEmail.trim(),
@@ -318,15 +308,21 @@ app.post('/send-report', async (req, res) => {
       if (!useCustomSmtp) {
         previewUrl = nodemailer.getTestMessageUrl(info);
       }
-      return res.json({ success: true, previewUrl: previewUrl || reportHttpUrl });
-    } catch (sendErr) {
-      console.warn('SMTP sending timed out or failed on cloud host. Falling back to HTTP Live Report Link:', sendErr.message);
-      // Return HTTP Live Report link as previewUrl fallback so user gets their report instantly!
       return res.json({ 
         success: true, 
-        previewUrl: reportHttpUrl,
-        message: 'تم تجهيز وتوليد رابط التقرير التفاعلي المباشر بنجاح!'
+        delivered: true, 
+        previewUrl, 
+        message: `✅ تم إرسال التقرير بنجاح إلى البريد الإلكتروني (${recipientEmail.trim()})!` 
       });
+    } catch (sendErr) {
+      console.error('SMTP sending error:', sendErr.message);
+      let errMsg = sendErr.message || 'فشل إرسال التقرير عبر البريد الإلكتروني.';
+      if (errMsg.includes('ETIMEDOUT') || errMsg.includes('timeout') || sendErr.code === 'ETIMEDOUT') {
+        errMsg = 'انتهت مهلة الاتصال بحساب البريد (Connection timeout). تفقّد عنوان SMTP والمنفذ (Port 465 مع خيار TLS مفعل). إذا كنت تستخدم Gmail، يرجى التأكد من استخدام "كلمة مرور التطبيق (App Password)" المكونة من 16 حرفاً.';
+      } else if (errMsg.includes('Invalid login') || errMsg.includes('535-5.7.8') || errMsg.includes('Username and Password not accepted')) {
+        errMsg = 'فشل تسجيل الدخول في بريد Gmail. يرجى التأكد من استخدام "كلمة مرور التطبيق (App Password)" من إعدادات أمان غوغل وليس كلمة المرور العادية.';
+      }
+      return res.status(500).json({ error: errMsg, reportUrl: reportHttpUrl });
     }
   } catch (error) {
     console.error('Error sending report email:', error);
