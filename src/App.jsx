@@ -1069,6 +1069,7 @@ export default function App() {
   const [testCards, setTestCards] = useState(INITIAL_CARDS);
   const [isRunning, setIsRunning] = useState(false);
   const [currentCardId, setCurrentCardId] = useState(null);
+  const [liveFrame, setLiveFrame] = useState(null);
   const [scheduledOrder, setScheduledOrder] = useState([]);
   const [scheduleType, setScheduleType] = useState('once'); // 'once' | 'daily' | 'weekly'
   const [scheduleDateTime, setScheduleDateTime] = useState('');
@@ -1258,6 +1259,12 @@ export default function App() {
       }));
       const statusIcon = status === 'passed' ? '🎉 نجح' : '⚠️ فشل';
       addLog(`[نهاية الاختبار] ${statusIcon} اختبار الكارت بنجاح`, status === 'passed' ? 'success' : 'error');
+    });
+
+    socket.on('screencast-frame', ({ frameData }) => {
+      if (frameData) {
+        setLiveFrame(`data:image/jpeg;base64,${frameData}`);
+      }
     });
 
     socket.on('global-error', ({ error }) => {
@@ -1946,6 +1953,7 @@ export default function App() {
   const resetAllStatuses = () => {
     setIsRunning(false);
     setCurrentCardId(null);
+    setLiveFrame(null);
     setTestCards(testCards.map(c => ({ ...c, status: 'idle', steps: [], logHistory: [], videoUrl: '' })));
     addLog('🔄 تم تصفير نتائج الاختبارات السابقة وإعادة الجاهزية.', 'system');
   };
@@ -2574,6 +2582,7 @@ export default function App() {
   const stopSuite = () => {
     setIsRunning(false);
     setCurrentCardId(null);
+    setLiveFrame(null);
     if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current.connect();
@@ -3847,8 +3856,41 @@ export default function App() {
           </div>
         </main>
 
-        {/* Right Side: Console Logs */}
+        {/* Right Side: Live Chrome Stream & Console Logs */}
         <aside className="console-panel">
+          {/* Live Embedded Chrome Browser Stream Box */}
+          <div style={{ marginBottom: '1.25rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'var(--bg-card)' }}>
+            <div className="console-header" style={{ background: 'var(--bg-card-hover)', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.85rem' }}>
+              <span className="console-title" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Eye size={16} />
+                {language === 'ar' ? 'البث الحي لمتصفح الاختبار (Live Stream)' : 'Live Chrome Browser Stream'}
+              </span>
+              {liveFrame && (
+                <span className="badge passed" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#22c55e', color: '#fff', fontWeight: 'bold' }}>
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff', display: 'inline-block' }}></span> LIVE
+                </span>
+              )}
+            </div>
+            <div style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090d16', minHeight: '240px', position: 'relative' }}>
+              {liveFrame ? (
+                <img 
+                  src={liveFrame} 
+                  alt="Live Chrome Stream" 
+                  style={{ width: '100%', maxHeight: '360px', objectFit: 'contain', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }} 
+                />
+              ) : (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem 1rem' }}>
+                  <Eye size={32} style={{ marginBottom: '0.5rem', opacity: 0.35, color: 'var(--primary)' }} />
+                  <p style={{ margin: 0, fontSize: '0.82rem', lineHeight: '1.5', maxWidth: '280px' }}>
+                    {language === 'ar' 
+                      ? 'شاشة البث الحي متوقفة حالياً. اضغط "تشغيل الاختبارات" لمشاهدة تحركات المتصفح مباشرة داخل هذا المربع.' 
+                      : 'Live stream is currently idle. Click "Run Tests" to watch live browser execution inside this box.'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="console-header">
             <span className="console-title">
               <Terminal size={16} />

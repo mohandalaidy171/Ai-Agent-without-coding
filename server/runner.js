@@ -796,6 +796,19 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
 
       page = await context.newPage();
 
+      // إرسال بث فوري مباشر لشاشة المتصفح إلى الواجهة (Live Screencast Stream)
+      let cdpClient;
+      try {
+        cdpClient = await context.newCDPSession(page);
+        await cdpClient.send('Page.startScreencast', { format: 'jpeg', quality: 65, maxWidth: 1280, maxHeight: 720 });
+        cdpClient.on('Page.screencastFrame', async ({ data, sessionId }) => {
+          try { await cdpClient.send('Page.screencastFrameAck', { sessionId }); } catch (e) {}
+          onEvent('screencast-frame', { cardId: card.id, frameData: data });
+        });
+      } catch (cdpErr) {
+        // CDPSession not supported or warning
+      }
+
       // نرسل حدث محاولة جديدة للواجهة (اختياري للتتبع)
       onEvent('test-retry-start', { cardId: card.id, attempt });
 

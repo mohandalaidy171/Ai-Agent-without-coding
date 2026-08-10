@@ -509,6 +509,15 @@ export async function runBugScan(input, onEvent) {
     const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const page = await context.newPage();
 
+    try {
+      const cdpClient = await context.newCDPSession(page);
+      await cdpClient.send('Page.startScreencast', { format: 'jpeg', quality: 65, maxWidth: 1280, maxHeight: 720 });
+      cdpClient.on('Page.screencastFrame', async ({ data, sessionId }) => {
+        try { await cdpClient.send('Page.screencastFrameAck', { sessionId }); } catch (e) {}
+        onEvent('screencast-frame', { cardId: 'bug-finder', frameData: data });
+      });
+    } catch (e) {}
+
     page.on('console', message => {
       if (message.type() === 'error') {
         runtime.consoleErrors.push({ url: page.url(), text: message.text() });
