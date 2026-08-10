@@ -2816,6 +2816,25 @@ export default function App() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Resend API Key Input Field on Main Screen */}
+                  <div className="input-wrapper" style={{ gridColumn: '1 / -1', marginTop: '0.5rem', padding: '0.85rem', borderRadius: '10px', background: 'rgba(34, 197, 94, 0.08)', border: '1.5px solid #22c55e' }}>
+                    <label htmlFor="resend-api-key-main" style={{ fontWeight: '800', color: '#16a34a', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      🚀 {language === 'ar' ? 'مفتاح Resend API لإرسال الإيميلات الفوري (مستوصى به للسيرفرات أونلاين)' : 'Resend Email API Key (Recommended for Cloud)'}
+                    </label>
+                    <input
+                      id="resend-api-key-main"
+                      type="password"
+                      className="input-field"
+                      placeholder="ضع الكود هنا (يبدأ بـ re_...)"
+                      value={reportEmail.apiKey || ''}
+                      onChange={(e) => setReportEmail(prev => ({ ...prev, apiKey: e.target.value }))}
+                      style={{ marginTop: '0.35rem' }}
+                    />
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.35rem' }}>
+                      {language === 'ar' ? '💡 احصل على مفتاح مجاني في 10 ثوانٍ من resend.com لإرسال التقارير مباشرة لإيميلك بدون حظر منافذ.' : '💡 Get a free key at resend.com to deliver emails directly without port blocks.'}
+                    </span>
+                  </div>
                 </div>
 
                 <div style={{ marginTop: '1.5rem', marginBottom: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
