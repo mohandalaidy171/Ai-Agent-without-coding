@@ -500,8 +500,12 @@ export async function runBugScan(input, onEvent) {
   let browser;
 
   try {
-    onEvent('bug-scan-start', { targetUrl, startedAt });
-    browser = await chromium.launch({ headless: false, slowMo: 250 });
+    const isHeadlessServer = Boolean(process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.HEADLESS === 'true' || !process.env.DISPLAY);
+    browser = await chromium.launch({
+      headless: isHeadlessServer,
+      slowMo: isHeadlessServer ? 0 : 250,
+      args: isHeadlessServer ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] : []
+    });
     const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const page = await context.newPage();
 

@@ -5,8 +5,27 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
+import { execSync } from 'child_process';
+import { chromium } from 'playwright';
 import { runTests } from './runner.js';
 import { runBugScan } from './bugFinder.js';
+
+// Auto-ensure Playwright Chromium browser binary exists on server startup
+try {
+  const execPath = chromium.executablePath();
+  if (!fs.existsSync(execPath)) {
+    console.log('Playwright Chromium binary not found. Installing Chromium...');
+    execSync('npx playwright install chromium', { stdio: 'inherit' });
+    console.log('Playwright Chromium installed successfully.');
+  }
+} catch (e) {
+  console.log('Ensuring Playwright Chromium installation...');
+  try {
+    execSync('npx playwright install chromium', { stdio: 'inherit' });
+  } catch (err) {
+    console.error('Playwright auto-install warning:', err.message);
+  }
+}
 
 const app = express();
 const httpServer = createServer(app);

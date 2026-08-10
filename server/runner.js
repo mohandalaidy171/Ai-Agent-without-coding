@@ -773,11 +773,11 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
       videoFilesBefore = new Set();
 
       try {
-        // تشغيل متصفح منفصل وجديد
+      const isHeadlessServer = Boolean(process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.HEADLESS === 'true' || !process.env.DISPLAY);
       browser = await chromium.launch({
-        headless: false,
-        slowMo: 100,
-        args: ['--start-maximized'] // إجبار نافذة المتصفح على التكبير الكامل فوراً
+        headless: isHeadlessServer,
+        slowMo: isHeadlessServer ? 0 : 100,
+        args: isHeadlessServer ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] : ['--start-maximized']
       });
 
       const enableVideo = Boolean(card.recordVideo);
