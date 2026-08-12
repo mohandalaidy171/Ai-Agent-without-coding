@@ -1090,6 +1090,8 @@ export default function App() {
 
   // WebSockets Connection
   const socketRef = useRef(null);
+  const pendingLiveFrameRef = useRef(null);
+  const liveFrameTimerRef = useRef(null);
 
   // Report Modal states
   const [isReportOpen, setIsReportOpen] = useState(false);
@@ -1267,8 +1269,16 @@ export default function App() {
     });
 
     socket.on('screencast-frame', ({ frameData }) => {
-      if (frameData) {
-        setLiveFrame(`data:image/jpeg;base64,${frameData}`);
+      if (!frameData) return;
+
+      // A full App render is expensive. Coalesce incoming frames so the UI paints at
+      // a smooth 10 fps while always showing the most recent frame.
+      pendingLiveFrameRef.current = `data:image/jpeg;base64,${frameData}`;
+      if (!liveFrameTimerRef.current) {
+        liveFrameTimerRef.current = setTimeout(() => {
+          setLiveFrame(pendingLiveFrameRef.current);
+          liveFrameTimerRef.current = null;
+        }, 100);
       }
     });
 
@@ -1349,6 +1359,7 @@ export default function App() {
     });
 
     return () => {
+      if (liveFrameTimerRef.current) clearTimeout(liveFrameTimerRef.current);
       socket.disconnect();
     };
   }, []);
@@ -2287,6 +2298,7 @@ export default function App() {
       }
       addLog(`⏰ الموعد المحدد وصل. تشغيل ${cardsToRun.length} اختبار الآن.`, 'system');
       setScheduleStatus('running');
+      setLiveFrame(null);
       runCards(cardsToRun, language === 'ar' ? 'تشغيل مجدول' : 'scheduled run');
 
       if (scheduleType === 'once') {
@@ -2346,6 +2358,7 @@ export default function App() {
     }
     clearScheduleTimer();
     setScheduleStatus('running');
+    setLiveFrame(null);
     runCards(selected, language === 'ar' ? 'تشغيل مجدول' : 'scheduled run');
     setScheduleStatus('idle');
   };
@@ -4135,6 +4148,35 @@ export default function App() {
             </section>
 
             <aside className="console-panel">
+              {isRunning && (
+                <div style={{ marginBottom: '1.25rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'var(--bg-card)' }}>
+                  <div className="console-header" style={{ background: 'var(--bg-card-hover)', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.85rem' }}>
+                    <span className="console-title" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <Eye size={16} />
+                      {language === 'ar' ? 'البث الحي للتشغيل المجدول' : 'Scheduled Run Live Stream'}
+                    </span>
+                    <span className="badge passed" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: '#22c55e', color: '#fff', fontWeight: 'bold' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#fff', display: 'inline-block' }}></span> LIVE
+                    </span>
+                  </div>
+                  <div style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#090d16', height: '280px', overflow: 'hidden' }}>
+                    {liveFrame ? (
+                      <img
+                        src={liveFrame}
+                        alt="Scheduled run live stream"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem 1rem' }}>
+                        <Eye size={32} style={{ marginBottom: '0.5rem', opacity: 0.35, color: 'var(--primary)' }} />
+                        <p style={{ margin: 0, fontSize: '0.82rem', lineHeight: '1.5' }}>
+                          {language === 'ar' ? 'جاري الاتصال بمتصفح الاختبار…' : 'Connecting to the test browser…'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="console-header">
                 <span className="console-title">
                   <Terminal size={16} />

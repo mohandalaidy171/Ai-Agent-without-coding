@@ -498,6 +498,7 @@ export async function runBugScan(input, onEvent) {
   };
 
   let browser;
+  let screencastSession = null;
 
   try {
     const isHeadlessServer = Boolean(process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.HEADLESS === 'true' || !process.env.DISPLAY);
@@ -509,19 +510,25 @@ export async function runBugScan(input, onEvent) {
     const context = await browser.newContext({ viewport: { width: 1366, height: 768 } });
     const page = await context.newPage();
 
-    let isStreaming = true;
-    (async () => {
-      while (isStreaming) {
-        try {
-          if (!page || page.isClosed()) break;
-          const buffer = await page.screenshot({ type: 'jpeg', quality: 55, timeout: 1500 });
-          if (buffer) {
-            onEvent('screencast-frame', { cardId: 'bug-finder', frameData: buffer.toString('base64') });
-          }
-        } catch (e) {}
-        await new Promise(r => setTimeout(r, 250));
-      }
-    })();
+    // Native Chrome screencast is much cheaper than polling page.screenshot().
+    let lastStreamFrameAt = 0;
+    try {
+      screencastSession = await context.newCDPSession(page);
+      screencastSession.on('Page.screencastFrame', ({ data, sessionId }) => {
+        void screencastSession.send('Page.screencastFrameAck', { sessionId }).catch(() => null);
+        const now = Date.now();
+        if (data && now - lastStreamFrameAt >= 83) {
+          lastStreamFrameAt = now;
+          onEvent('screencast-frame', { cardId: 'bug-finder', frameData: data });
+        }
+      });
+      await screencastSession.send('Page.startScreencast', {
+        format: 'jpeg', quality: 45, maxWidth: 960, maxHeight: 540, everyNthFrame: 2
+      });
+    } catch (streamError) {
+      console.warn('Live stream unavailable:', streamError.message);
+      screencastSession = null;
+    }
 
     page.on('console', message => {
       if (message.type() === 'error') {
@@ -615,6 +622,10 @@ export async function runBugScan(input, onEvent) {
   } catch (error) {
     onEvent('bug-scan-error', { error: error.message });
   } finally {
+    if (screencastSession) {
+      await screencastSession.send('Page.stopScreencast').catch(() => null);
+      await screencastSession.detach().catch(() => null);
+    }
     if (browser) {
       await browser.close().catch(() => null);
     }

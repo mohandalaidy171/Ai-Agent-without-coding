@@ -796,20 +796,34 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
 
       page = await context.newPage();
 
-      // إرسال بث فوري مباشر لشاشة المتصفح إلى الواجهة (Live Stream)
-      let isStreaming = true;
-      (async () => {
-        while (isStreaming) {
-          try {
-            if (!page || page.isClosed()) break;
-            const buffer = await page.screenshot({ type: 'jpeg', quality: 55, timeout: 1500 });
-            if (buffer) {
-              onEvent('screencast-frame', { cardId: card.id, frameData: buffer.toString('base64') });
-            }
-          } catch (e) {}
-          await new Promise(r => setTimeout(r, 250));
-        }
-      })();
+      // Use Chrome's native screencast instead of repeatedly requesting screenshots.
+      // Screenshot polling competes with the test itself and is particularly slow over
+      // a remote Socket.IO connection. The frame is already base64-encoded by CDP.
+      let screencastSession = null;
+      let lastStreamFrameAt = 0;
+      try {
+        screencastSession = await context.newCDPSession(page);
+        screencastSession.on('Page.screencastFrame', ({ data, sessionId }) => {
+          // Always acknowledge frames so Chrome does not pause the screencast, but only
+          // send up to 12 fps to keep the socket and browser UI responsive.
+          void screencastSession.send('Page.screencastFrameAck', { sessionId }).catch(() => null);
+          const now = Date.now();
+          if (data && now - lastStreamFrameAt >= 83) {
+            lastStreamFrameAt = now;
+            onEvent('screencast-frame', { cardId: card.id, frameData: data });
+          }
+        });
+        await screencastSession.send('Page.startScreencast', {
+          format: 'jpeg',
+          quality: 45,
+          maxWidth: 960,
+          maxHeight: 540,
+          everyNthFrame: 2
+        });
+      } catch (streamError) {
+        console.warn('Live stream unavailable:', streamError.message);
+        screencastSession = null;
+      }
 
       // نرسل حدث محاولة جديدة للواجهة (اختياري للتتبع)
       onEvent('test-retry-start', { cardId: card.id, attempt });
@@ -1017,7 +1031,10 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
         onEvent('global-error', { error: err.message });
         cardFailed = true;
       } finally {
-        isStreaming = false;
+        if (screencastSession) {
+          await screencastSession.send('Page.stopScreencast').catch(() => null);
+          await screencastSession.detach().catch(() => null);
+        }
         // إغلاق المتصفح المنفصل فوراً بعد إنهاء المحاولة وقبل المحاولة التالية/الكارد التالي
         if (browser) {
           try {
