@@ -1082,6 +1082,7 @@ export default function App() {
   const [scheduleDayOfWeek, setScheduleDayOfWeek] = useState('1'); // '0'=Sun, '1'=Mon, ..., '6'=Sat
   const [scheduleTimeZone, setScheduleTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Amman');
   const [scheduleStatus, setScheduleStatus] = useState('idle');
+  const [isScheduledStreamVisible, setIsScheduledStreamVisible] = useState(false);
   const scheduleTimerRef = useRef(null);
 
   // Real-time Console logs
@@ -1180,11 +1181,13 @@ export default function App() {
 
     socket.on('connect_error', (error) => {
       setIsRunning(false);
+      setIsScheduledStreamVisible(false);
       console.warn(`WebSocket connect error: ${error.message}`);
     });
 
     socket.on('disconnect', () => {
       setIsRunning(false);
+      setIsScheduledStreamVisible(false);
       addLog('تم قطع الاتصال بالخادم', 'error');
     });
 
@@ -1284,6 +1287,7 @@ export default function App() {
 
     socket.on('global-error', ({ error }) => {
       setIsRunning(false);
+      setIsScheduledStreamVisible(false);
       setCurrentCardId(null);
       addLog(`🚨 خطأ عام في المتصفح التلقائي: ${error}`, 'error');
     });
@@ -1303,6 +1307,7 @@ export default function App() {
 
     socket.on('all-tests-end', () => {
       setIsRunning(false);
+      setIsScheduledStreamVisible(false);
       setCurrentCardId(null);
       addLog('🏁 تم الانتهاء من تشغيل جميع الاختبارات بنجاح.', 'system');
 
@@ -2298,6 +2303,7 @@ export default function App() {
       }
       addLog(`⏰ الموعد المحدد وصل. تشغيل ${cardsToRun.length} اختبار الآن.`, 'system');
       setScheduleStatus('running');
+      setIsScheduledStreamVisible(true);
       setLiveFrame(null);
       runCards(cardsToRun, language === 'ar' ? 'تشغيل مجدول' : 'scheduled run');
 
@@ -2358,6 +2364,7 @@ export default function App() {
     }
     clearScheduleTimer();
     setScheduleStatus('running');
+    setIsScheduledStreamVisible(true);
     setLiveFrame(null);
     runCards(selected, language === 'ar' ? 'تشغيل مجدول' : 'scheduled run');
     setScheduleStatus('idle');
@@ -2366,6 +2373,7 @@ export default function App() {
   const handleCancelSchedule = () => {
     clearScheduleTimer();
     setScheduleStatus('idle');
+    setIsScheduledStreamVisible(false);
     addLog('🛑 تم إلغاء الجدولة الحالية.', 'system');
   };
 
@@ -2625,6 +2633,7 @@ export default function App() {
 
   const stopSuite = () => {
     setIsRunning(false);
+    setIsScheduledStreamVisible(false);
     setCurrentCardId(null);
     setLiveFrame(null);
     if (socketRef.current) {
@@ -4148,7 +4157,7 @@ export default function App() {
             </section>
 
             <aside className="console-panel">
-              {isRunning && (
+              {isScheduledStreamVisible && (
                 <div style={{ marginBottom: '1.25rem', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: 'var(--bg-card)' }}>
                   <div className="console-header" style={{ background: 'var(--bg-card-hover)', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0.85rem' }}>
                     <span className="console-title" style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
