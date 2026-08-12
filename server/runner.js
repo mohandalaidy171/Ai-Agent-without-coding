@@ -771,6 +771,7 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
       cardFailed = false;
       openedTargetPage = false;
       videoFilesBefore = new Set();
+      let screencastSession = null;
 
       try {
       const isHeadlessServer = Boolean(process.env.RENDER || process.env.NODE_ENV === 'production' || process.env.HEADLESS === 'true' || !process.env.DISPLAY);
@@ -799,7 +800,6 @@ export async function runTests(testCards, credentials, onEvent, systemVariables)
       // Use Chrome's native screencast instead of repeatedly requesting screenshots.
       // Screenshot polling competes with the test itself and is particularly slow over
       // a remote Socket.IO connection. The frame is already base64-encoded by CDP.
-      let screencastSession = null;
       let lastStreamFrameAt = 0;
       try {
         screencastSession = await context.newCDPSession(page);
